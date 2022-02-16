@@ -1,5 +1,11 @@
 module.exports = {
-    mode: 'jit',
-    purge: ['./public/**/*.html', './src/**/*.{js,jsx,ts,tsx,vue}'],
-    // specify other options here
-  };
+  content: ["./src/**/*.{html,js,svelte,ts}"],
+  theme: {
+    extend: {
+      colors: {
+        "page-base": "#515151",
+      },
+    },
+  },
+  // specify other options here
+};
