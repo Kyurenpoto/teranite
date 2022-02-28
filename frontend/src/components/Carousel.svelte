@@ -5,6 +5,7 @@
         { image: 'C', description: 'c' },
         { image: 'D', description: 'd' },
         { image: 'E', description: 'e' },
+        { image: 'F', description: 'f' },
     ];
 </script>
 
@@ -16,7 +17,7 @@
 
 <section class="w-full flex flex-row gap-x-[var(--grid-gutter-width)] items-center justify-between">
     <button class="button">LButton</button>
-    <section class="flex flex-row gap-x-[var(--grid-gutter-width)] justify-start">
+        <section class="w-[var(--grid-column-10)] flex flex-row gap-x-[var(--grid-gutter-width)] justify-start overflow-hidden">
         {#each list as { image, description }}
             <section class="flex flex-col gap-y-5">
                 <div class="w-[var(--grid-column-2)] h-[var(--grid-column-2)] grid place-items-center bg-violet-500">{image}</div>
