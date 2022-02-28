@@ -1,4 +1,6 @@
 <script lang="ts">
+    const scrollSize = (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-column-width')) +
+                        parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-gutter-width'))) * 2;
     let list = [
         { image: 'A', description: 'a' },
         { image: 'B', description: 'b' },
@@ -7,6 +9,8 @@
         { image: 'E', description: 'e' },
         { image: 'F', description: 'f' },
     ];
+    let idx = 0;
+    let scrollable: HTMLElement;
 </script>
 
 <style lang="postcss">
@@ -16,8 +20,8 @@
 </style>
 
 <section class="w-full flex flex-row gap-x-[var(--grid-gutter-width)] items-center justify-between">
-    <button class="button">LButton</button>
-        <section class="w-[var(--grid-column-10)] flex flex-row gap-x-[var(--grid-gutter-width)] justify-start overflow-hidden">
+    <button class="button" on:click="{()=>{scrollable.scrollLeft-=scrollSize; idx-=1;}}" disabled="{idx==0}">LButton</button>
+    <section class="w-[var(--grid-column-10)] flex flex-row gap-x-[var(--grid-gutter-width)] justify-start overflow-hidden" bind:this="{scrollable}">
         {#each list as { image, description }}
             <section class="flex flex-col gap-y-5">
                 <div class="w-[var(--grid-column-2)] h-[var(--grid-column-2)] grid place-items-center bg-violet-500">{image}</div>
@@ -25,5 +29,5 @@
             </section>
         {/each}
     </section>
-    <button class="button">RButton</button>
+    <button class="button" on:click="{()=>{scrollable.scrollLeft+=scrollSize; idx+=1;}}" disabled="{idx+5==list.length}">RButton</button>
 </section>
