@@ -9,10 +9,6 @@
       { image: 'rank', link: '/rank' },
       { image: 'explore', link: '/explore' },
   ];
-  let r_nav = [
-      { image: 'favorite', link: '/favorite', width: 'w-[var(--grid-column-1)]' },
-      { image: 'account', link: '/account', width: 'w-[var(--grid-column-3)]' },
-  ];
 </script>
 
 <style lang="postcss">
@@ -32,9 +28,7 @@
         {/each}
     </section>
     <section class="nav-list">
-        {#each r_nav as { image, link, width }}
-            <NavLink image={image} link={link} width={width}/>
-        {/each}
+        <NavLink image="account" link="/account" width="w-[var(--grid-column-3)]"/>
     </section>
   </nav>
 </header>
