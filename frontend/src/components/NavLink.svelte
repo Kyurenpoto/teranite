@@ -11,7 +11,7 @@
   }
 </style>
 
-<a href="{link}">
+<a href="{link}" on:click>
   <div class="{width} nav-link">{image}</div>
 </a>
 

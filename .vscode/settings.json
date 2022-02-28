@@ -1,0 +1,10 @@
+{
+  "svelte.enable-ts-plugin": true,
+  "svelte.plugin.svelte.useNewTransformation": true,
+  "[svelte]": {
+    "editor.defaultFormatter": "svelte.svelte-vscode"
+  },
+  "svelte.plugin.svelte.format.config.printWidth": 120,
+  "prettier.printWidth": 120,
+  "eslint.validate": ["svelte"]
+}

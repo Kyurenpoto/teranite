@@ -28,7 +28,7 @@
         {/each}
     </section>
     <section class="nav-list">
-        <NavLink image="account" link="/account" width="w-[var(--grid-column-3)]"/>
+        <NavLink image="account" link="/" width="w-[var(--grid-column-3)]" on:click="{()=>{}}"/>
     </section>
   </nav>
 </header>
