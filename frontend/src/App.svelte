@@ -1,15 +1,8 @@
 <script lang="ts">
-  import LoginPage from "./routes/LoginPage.svelte";
-  import LogoutPage from "./routes/LogoutPage.svelte";
-
-  let account = true;
+  import MainPage from "./routes/MainPage.svelte";
 </script>
 
-{#if account == true}
-  <LoginPage />
-{:else}
-  <LogoutPage />
-{/if}
+<MainPage />
 
 <style lang="postcss" global>
   @tailwind base;
