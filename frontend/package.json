@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "start": "snowpack dev",
-    "build": "snowpack build",
-    "test": "web-test-runner \"src/**/*.test.ts\""
+    "start": "cross-env NODE_ENV=development snowpack dev",
+    "build": "cross-env NODE_ENV=production snowpack build",
+    "test": "cross-env NODE_ENV=development web-test-runner \"src/**/*.test.ts\""
   },
   "devDependencies": {
     "@snowpack/plugin-dotenv": "^2.2.0",
@@ -11,6 +11,7 @@
     "@snowpack/plugin-svelte": "^3.6.1",
     "@snowpack/plugin-typescript": "^1.2.1",
     "@snowpack/web-test-runner-plugin": "^0.2.2",
+    "@sveltejs/kit": "^1.0.0-next.1",
     "@testing-library/svelte": "^3.0.3",
     "@tsconfig/svelte": "^1.0.10",
     "@types/chai": "^4.2.17",
@@ -19,6 +20,7 @@
     "@web/test-runner": "^0.13.3",
     "autoprefixer": "^10.4.2",
     "chai": "^4.3.4",
+    "cross-env": "^7.0.3",
     "eslint": "^8.9.0",
     "mocha": "^9.2.0",
     "postcss": "^8.4.6",
