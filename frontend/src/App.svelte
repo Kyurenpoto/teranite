@@ -28,4 +28,7 @@
     --grid-column-11: calc(calc(var(--grid-column-width) * 11) + calc(var(--grid-gutter-width) * 10));
     --grid-column-12: calc(calc(var(--grid-column-width) * 12) + calc(var(--grid-gutter-width) * 11));
   }
+  html {
+    @apply overflow-y-scroll;
+  }
 </style>
