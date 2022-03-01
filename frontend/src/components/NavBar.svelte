@@ -16,7 +16,9 @@
   <nav class="w-[var(--grid-column-12)] h-full flex flex-row items-center justify-between">
     <section class="nav-list">
       {#each l_nav as { image, link }}
-        <NavLink image="{image}" link="{link}" />
+        <NavLink link="{link}">
+          {image}
+        </NavLink>
       {/each}
     </section>
     <section class="nav-list">

@@ -8,7 +8,7 @@
 <footer class="h-20 w-full mb-0 mt-auto grid place-items-center {class_name}">
   <section class="w-[var(--grid-column-12)] h-full flex flex-row items-center justify-between">
     <div class="h-full">
-      <NavLink image="home" link="/" />
+      <NavLink link="/">home</NavLink>
     </div>
     <nav class="flex flex-row justify-center gap-x-6">
       <a href="/" class="text-gray-500 hover:text-gray-900 dark:hover:text-white">
