@@ -12,19 +12,22 @@
   ];
 </script>
 
-<header class="h-20 w-full mt-0 grid place-items-center {class_name}">
-  <nav class="w-[var(--grid-column-12)] h-full flex flex-row items-center justify-between">
-    <section class="nav-list">
-      {#each l_nav as { image, link }}
-        <NavLink link="{link}">
-          {image}
-        </NavLink>
-      {/each}
-    </section>
-    <section class="nav-list">
-      <div class="w-[var(--grid-column-3)] nav-link" on:click="{hasAccount.toggle}">account</div>
-    </section>
-  </nav>
+<header class="w-full mt-0 grid place-items-center {class_name}">
+  <section class="flex flex-col gap-y-10">
+    <nav class="w-[var(--grid-column-12)] h-20 flex flex-row items-center justify-between">
+      <section class="nav-list">
+        {#each l_nav as { image, link }}
+          <NavLink link="{link}">
+            {image}
+          </NavLink>
+        {/each}
+      </section>
+      <section class="nav-list">
+        <div class="w-[var(--grid-column-3)] nav-link" on:click="{hasAccount.toggle}">account</div>
+      </section>
+    </nav>
+    <slot />
+  </section>
 </header>
 
 <style lang="postcss">

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RestHeader from "./RestHeader.svelte";
   import BasePage from "../components/BasePage.svelte";
   import NavBar from "../components/NavBar.svelte";
   import MainSection from "../components/MainSection.svelte";
@@ -10,15 +11,17 @@
 </script>
 
 <BasePage class="bg-[#242424]">
-  <NavBar class="bg-blue-900" />
-  <MainSection>
-    {#if $hasAccount == true}
+  <NavBar class="bg-blue-900">
+    {#if $hasAccount == false}
+      <RestHeader />
+    {/if}
+  </NavBar>
+  {#if $hasAccount == true}
+    <MainSection>
       <RecentSection />
       <ArtistsSection />
       <DiscoverySection />
-    {:else}
-      <div></div>
-    {/if}
-  </MainSection>
+    </MainSection>
+  {/if}
   <InfoNavBar class="bg-blue-900" />
 </BasePage>
