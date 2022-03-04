@@ -1,10 +1,20 @@
 <script lang="ts">
   import BasePage from "./components/BasePage.svelte";
+  import OopsPage from "./routes/OopsPage.svelte";
   import MainPage from "./routes/MainPage.svelte";
+
+  let baseUrl = window.location.protocol + "//" + window.location.host + "/" + window.location.pathname.split("/")[0];
+  let pages = [
+    { path: '', page: MainPage },
+  ];
 </script>
 
 <BasePage>
-  <MainPage />
+  {#if pages.filter(x => baseUrl + x.path == window.location.href).length == 0}
+    <OopsPage />
+  {:else}
+    <svelte:component this="{pages.filter(x => baseUrl + x.path == window.location.href)[0].page}"/>
+  {/if}
 </BasePage>
 
 <style lang="postcss" global>
