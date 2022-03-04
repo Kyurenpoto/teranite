@@ -12,6 +12,15 @@
   ];
 </script>
 
+<style lang="postcss">
+  .nav-list {
+    @apply h-full flex flex-row gap-x-[var(--grid-gutter-width)];
+  }
+  .nav-link {
+    @apply h-full grid place-items-center bg-amber-500;
+  }
+</style>
+
 <header class="w-full mt-0 grid place-items-center {class_name}">
   <section class="flex flex-col gap-y-10">
     <nav class="w-[var(--grid-column-12)] h-20 flex flex-row items-center justify-between">
@@ -23,18 +32,9 @@
         {/each}
       </section>
       <section class="nav-list">
-        <div class="w-[var(--grid-column-3)] nav-link" on:click="{hasAccount.toggle}">account</div>
+        <button class="w-[var(--grid-column-3)] nav-link" on:click="{hasAccount.toggle}">account</button>
       </section>
     </nav>
     <slot />
   </section>
 </header>
-
-<style lang="postcss">
-  .nav-list {
-    @apply h-full flex flex-row gap-x-[var(--grid-gutter-width)];
-  }
-  .nav-link {
-    @apply h-full grid place-items-center bg-amber-500;
-  }
-</style>
