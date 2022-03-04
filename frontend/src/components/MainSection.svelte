@@ -1,8 +1,6 @@
-<main>
-  <section class="content-section w-[var(--grid-column-12)]">
-    <slot />
-  </section>
-</main>
+<section class="content-section w-[var(--grid-column-12)]">
+  <slot />
+</section>
 
 <style lang="postcss">
   .content-section {

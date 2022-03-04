@@ -25,6 +25,7 @@ specifiers:
   rollup: ^2.67.0
   snowpack: ^3.8.7
   svelte: ^3.46.4
+  svelte-hmr: ^0.14.9
   svelte-preprocess: ^4.7.2
   tailwindcss: ^3.0.22
   typescript: ^4.3.4
@@ -54,6 +55,7 @@ devDependencies:
   rollup: 2.67.0
   snowpack: 3.8.8
   svelte: 3.46.4
+  svelte-hmr: 0.14.9_svelte@3.46.4
   svelte-preprocess: 4.10.2_88b359da5cac6d8f6ee1bbb7080a3fa9
   tailwindcss: 3.0.22_autoprefixer@10.4.2
   typescript: 4.5.5
@@ -5219,6 +5221,14 @@ packages:
 
   /svelte-hmr/0.13.5_svelte@3.46.4:
     resolution: {integrity: sha512-DgYkBMBkOFVqm0HydwKDLF9kZ3iJkNFZeR9TjkTytcActs3onfd3qXP/ImqKd492PRLQbNtW1V/AeYN1R2IxOw==}
+    peerDependencies:
+      svelte: '>=3.19.0'
+    dependencies:
+      svelte: 3.46.4
+    dev: true
+
+  /svelte-hmr/0.14.9_svelte@3.46.4:
+    resolution: {integrity: sha512-bKE9+4qb4sAnA+TKHiYurUl970rjA0XmlP9TEP7K/ncyWz3m81kA4HOgmlZK/7irGK7gzZlaPDI3cmf8fp/+tg==}
     peerDependencies:
       svelte: '>=3.19.0'
     dependencies:
