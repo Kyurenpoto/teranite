@@ -1,8 +1,11 @@
 <script lang="ts">
+  import BasePage from "./components/BasePage.svelte";
   import MainPage from "./routes/MainPage.svelte";
 </script>
 
-<MainPage />
+<BasePage>
+  <MainPage />
+</BasePage>
 
 <style lang="postcss" global>
   @tailwind base;
