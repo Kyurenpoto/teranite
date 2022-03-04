@@ -1,7 +1,7 @@
 import { writable } from "svelte/store";
 
 function createHasAccount() {
-  const { subscribe, set, update } = writable(true);
+  const { subscribe, update } = writable(true);
 
   return {
     subscribe,

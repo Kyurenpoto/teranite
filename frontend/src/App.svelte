@@ -2,9 +2,13 @@
   import BasePage from "./components/BasePage.svelte";
   import OopsPage from "./routes/OopsPage.svelte";
   import MainPage from "./routes/MainPage.svelte";
+  import LoginPage from "./routes/LoginPage.svelte";
 
   let baseUrl = window.location.protocol + "//" + window.location.host + "/" + window.location.pathname.split("/")[0];
-  let pages = [{ path: "", page: MainPage }];
+  let pages = [
+    { path: "", page: MainPage },
+    { path: "login", page: LoginPage },
+  ];
 </script>
 
 <style lang="postcss" global>

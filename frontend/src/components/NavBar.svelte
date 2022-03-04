@@ -32,7 +32,13 @@
         {/each}
       </section>
       <section class="nav-list">
-        <button class="w-[var(--grid-column-3)] nav-link" on:click="{hasAccount.toggle}">account</button>
+        {#if $hasAccount == true}
+          <button class="w-[var(--grid-column-3)] nav-link" on:click="{hasAccount.toggle}">logout</button>
+        {:else}
+          <a href="/login">
+            <button class="w-[var(--grid-column-3)] nav-link">login</button>
+          </a>
+        {/if}
       </section>
     </nav>
     <slot />
