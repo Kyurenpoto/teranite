@@ -1,7 +1,7 @@
 import { writable } from "svelte/store";
 
 function createHasAccount() {
-  const { subscribe, update } = writable(true);
+  const { subscribe, update } = writable<Boolean>(localStorage.hasAccount === "true");
 
   return {
     subscribe,
@@ -10,3 +10,5 @@ function createHasAccount() {
 }
 
 export let hasAccount = createHasAccount();
+
+hasAccount.subscribe((x) => (localStorage.hasAccount = String(x)));

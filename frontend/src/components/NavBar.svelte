@@ -1,6 +1,6 @@
 <script lang="ts">
   import NavLink from "./NavLink.svelte";
-  import { hasAccount } from "../stores.js";
+  import { hasAccount } from "../stores/hasAccount";
 
   let class_name = "";
   export { class_name as class };
@@ -32,7 +32,7 @@
         {/each}
       </section>
       <section class="nav-list">
-        {#if $hasAccount == true}
+        {#if $hasAccount === true}
           <button class="w-[var(--grid-column-3)] nav-link" on:click="{hasAccount.toggle}">logout</button>
         {:else}
           <a href="/login">
