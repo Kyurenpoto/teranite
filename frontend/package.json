@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "cross-env NODE_ENV=development snowpack dev",
-    "build": "cross-env NODE_ENV=production snowpack build",
+    "build": "cross-env NODE_ENV=production snowpack build && ../backend/replace.sh",
     "test": "cross-env NODE_ENV=development web-test-runner \"src/**/*.test.ts\""
   },
   "devDependencies": {
