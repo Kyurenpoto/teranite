@@ -17,5 +17,12 @@
   "editor.formatOnSave": true,
   "python.formatting.provider": "black",
   "python.linting.lintOnSave": true,
-  "python.linting.pylintEnabled": false
+  "python.linting.pylintEnabled": false,
+  "python.linting.mypyArgs": [
+    "--follow-imports=silent",
+    "--ignore-missing-imports",
+    "--show-column-numbers",
+    "--no-pretty",
+    "--python-version=3.10.2"
+  ]
 }
