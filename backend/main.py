@@ -1,4 +1,7 @@
-from __future__ import annotations
+from database import models
+from database.database import engine
+
+models.Base.metadata.create_all(bind=engine)
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,11 +20,17 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+from config import container
+import executable_request
+
+app.state.container = container
+app.state.container.wire(modules=[executable_request])
+
+
 templates = Jinja2Templates(directory="static")
 
 
-from .executable_request import ExecutableRequest, GithubLoginLogic
-
+from executable_request import ExecutableRequest, GithubLoginLogic
 
 logics: dict[str, ExecutableRequest] = {
     "login/github/callback": GithubLoginLogic(clientId="", clientSecret="")
