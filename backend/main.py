@@ -41,8 +41,13 @@ class GithubLoginLogic(GithubData, ExecutableRequest):
         print("github logic")
         async with AsyncClient() as client:
             response: Response = await client.post(
-                url=f"https://github.com/login/oauth/access_token?client_id={self.clientId}&client_secret={self.clientSecret}&code={request.query_params['code']}",
+                url=f"https://github.com/login/oauth/access_token",
                 headers={"Accept": "application/json"},
+                params={
+                    "client_id": self.clientId,
+                    "client_secret": self.clientSecret,
+                    "code": request.query_params["code"],
+                },
                 timeout=1.0,
             )
             print(response.json())
