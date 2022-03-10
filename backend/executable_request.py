@@ -3,14 +3,13 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import NamedTuple
 
-from fastapi import Request
+from dependency_injector.wiring import Provide, inject
+from fastapi import Request, status
 from fastapi.responses import RedirectResponse
 from httpx import AsyncClient
-from sqlalchemy.orm import Session
 
-from database import crud, schemas
-from dependency_injector.wiring import Provide, inject
 from config import Container
+from database import crud, schemas
 from database.database import DB
 
 
@@ -39,7 +38,11 @@ class GithubLoginLogic(GithubData, ExecutableRequest):
 
         print(f"login: {email}")
 
-        return RedirectResponse("http://127.0.0.1:8000/")
+        return RedirectResponse(
+            "http://127.0.0.1:8000/",
+            status_code=status.HTTP_302_FOUND,
+            headers={"hasAccount": "true", "email": email},
+        )
 
     async def accessToken(self, authCode: str) -> GithubToken:
         async with AsyncClient() as client:
@@ -73,6 +76,7 @@ class GithubLoginLogic(GithubData, ExecutableRequest):
 
             return response["email"]
 
+    @inject
     async def updateToken(
         self, email: str, token: GithubToken, db: DB = Provide[Container.db]
     ):
@@ -86,6 +90,7 @@ class GithubLoginLogic(GithubData, ExecutableRequest):
                     githubRefreshToken=token.refreshToken,
                 ),
             )
+            print("create user")
         else:
             crud.updateUser(
                 db.db,
@@ -93,3 +98,4 @@ class GithubLoginLogic(GithubData, ExecutableRequest):
                 accessToken=token.accessToken,
                 refreshToken=token.refreshToken,
             )
+            print("update user")
