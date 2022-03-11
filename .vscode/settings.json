@@ -9,7 +9,6 @@
     "editor.defaultFormatter": "ms-python.python"
   },
   "svelte.plugin.svelte.format.config.printWidth": 120,
-  "prettier.printWidth": 120,
   "eslint.validate": ["svelte"],
   "git.allowForcePush": true,
   "python.linting.mypyEnabled": true,

@@ -3,5 +3,6 @@
   "svelteStrictMode": true,
   "svelteBracketNewLine": true,
   "svelteAllowShorthand": false,
-  "printWidth": 120
+  "printWidth": 120,
+  "endOfLine": "auto"
 }
