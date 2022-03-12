@@ -1,16 +1,20 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from typing import NamedTuple
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import Request, status
-from fastapi.responses import RedirectResponse
+from fastapi import status
+from fastapi.responses import JSONResponse
 from httpx import AsyncClient
+from pydantic import BaseModel
 
 from config import Container
 from database import crud, schemas
 from database.database import DB
+
+
+class Code(BaseModel):
+    code: str
 
 
 class GithubToken(NamedTuple):
@@ -18,30 +22,22 @@ class GithubToken(NamedTuple):
     refreshToken: str
 
 
-class ExecutableRequest(ABC):
-    @abstractmethod
-    async def execute(self, request: Request):
-        pass
-
-
-class GithubData(NamedTuple):
+class GithubOAuth(NamedTuple):
     clientId: str
     clientSecret: str
 
-
-class GithubLoginLogic(GithubData, ExecutableRequest):
-    async def execute(self, request: Request):
-        print("github logic")
-        token: GithubToken = await self.accessToken(request.query_params["code"])
+    async def execute(self, code: Code):
+        token: GithubToken = await self.accessToken(code.code)
         email: str = await self.email(token)
         await self.updateToken(email, token)
 
-        print(f"login: {email}")
-
-        return RedirectResponse(
-            "http://127.0.0.1:8000/",
-            status_code=status.HTTP_302_FOUND,
-            headers={"hasAccount": "true", "email": email},
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "has_account": True,
+                "access_token": email,
+                "refresh_token": email,
+            },
         )
 
     async def accessToken(self, authCode: str) -> GithubToken:
@@ -61,7 +57,7 @@ class GithubLoginLogic(GithubData, ExecutableRequest):
 
             return GithubToken(
                 accessToken=response["access_token"],
-                refreshToken=response["access_token"],
+                refreshToken=response["refresh_token"],
             )
 
     async def email(self, token: GithubToken) -> str:
@@ -90,7 +86,6 @@ class GithubLoginLogic(GithubData, ExecutableRequest):
                     githubRefreshToken=token.refreshToken,
                 ),
             )
-            print("create user")
         else:
             crud.updateUser(
                 db.db,
@@ -98,4 +93,3 @@ class GithubLoginLogic(GithubData, ExecutableRequest):
                 accessToken=token.accessToken,
                 refreshToken=token.refreshToken,
             )
-            print("update user")

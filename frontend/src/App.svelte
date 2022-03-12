@@ -3,14 +3,16 @@
   import OopsPage from "./routes/OopsPage.svelte";
   import MainPage from "./routes/MainPage.svelte";
   import LoginPage from "./routes/LoginPage.svelte";
-  import { baseUrl } from "./modules/baseUrl";
+  import RedirectSocial from "./routes/RedirectSocial.svelte";
 
-  let pages = [
-    { path: "", page: MainPage },
-    { path: "login", page: LoginPage },
+  const pages = [
+    { path: "/", page: MainPage },
+    { path: "/login", page: LoginPage },
+    { path: "/login/github/callback", page: RedirectSocial },
   ];
+  const redirects = ["/login/github/callback"];
   function currentPages(): Array<{ path: string; page: typeof MainPage }> {
-    return pages.filter((x) => baseUrl() + x.path == window.location.href);
+    return pages.filter((x) => x.path == window.location.pathname);
   }
 </script>
 
@@ -43,10 +45,14 @@
   }
 </style>
 
-<BasePage>
-  {#if currentPages().length === 0}
+{#if currentPages().length === 0}
+  <BasePage>
     <OopsPage />
-  {:else}
+  </BasePage>
+{:else if redirects.includes(window.location.pathname)}
+  <svelte:component this="{currentPages()[0].page}" />
+{:else}
+  <BasePage>
     <svelte:component this="{currentPages()[0].page}" />
-  {/if}
-</BasePage>
+  </BasePage>
+{/if}

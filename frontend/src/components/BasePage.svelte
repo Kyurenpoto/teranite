@@ -8,7 +8,7 @@
 
 <div class="min-h-screen w-[calc(100vw-var(--scrollbar-width))] flex flex-col bg-[#242424]">
   <NavBar class="bg-blue-900">
-    {#if baseUrl() === window.location.href && $hasAccount === false}
+    {#if `${baseUrl}/` === window.location.href && $hasAccount === false}
       <RestHeader />
     {/if}
   </NavBar>
