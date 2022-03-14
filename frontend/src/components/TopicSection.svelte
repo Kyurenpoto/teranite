@@ -1,15 +1,8 @@
 <script lang="ts">
-  let class_name = "";
-  let title = "";
-  export { class_name as class, title };
+  let className = "";
+  export let title = "";
+  export { className as class };
 </script>
-
-<section class="topic-section {class_name}">
-  <div class="title w-[var(--grid-column-4)]">
-    <h2>{title}</h2>
-  </div>
-  <slot />
-</section>
 
 <style lang="postcss">
   .topic-section {
@@ -20,3 +13,10 @@
     @apply grid place-items-center bg-red-500 h-[var(--title-height)];
   }
 </style>
+
+<section class="topic-section {className}">
+  <div class="title w-[var(--grid-column-4)]">
+    <h2>{title}</h2>
+  </div>
+  <slot />
+</section>

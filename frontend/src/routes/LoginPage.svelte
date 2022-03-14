@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { baseUrl } from "../modules/baseUrl";
+  import { baseUrl } from "../modules/urlUtils";
 
   const clientId = "Iv1.886232f678ac9a33";
   const redirectUri = `${baseUrl}/login/github/callback`;

@@ -1,19 +1,59 @@
 <script lang="ts">
   import BasePage from "./components/BasePage.svelte";
-  import OopsPage from "./routes/OopsPage.svelte";
-  import MainPage from "./routes/MainPage.svelte";
   import LoginPage from "./routes/LoginPage.svelte";
+  import MainPage from "./routes/MainPage.svelte";
+  import OopsPage from "./routes/OopsPage.svelte";
   import RedirectSocial from "./routes/RedirectSocial.svelte";
 
   const pages = [
+    { path: "", page: OopsPage },
     { path: "/", page: MainPage },
     { path: "/login", page: LoginPage },
     { path: "/login/github/callback", page: RedirectSocial },
   ];
-  const redirects = ["/login/github/callback"];
-  function currentPages(): Array<{ path: string; page: typeof MainPage }> {
-    return pages.filter((x) => x.path == window.location.pathname);
+
+  function pageFromPath(path: string) {
+    return pages.map((x) => x.path).includes(path) ? pages.filter((x) => x.path === path)[0].page : OopsPage;
   }
+
+  let currentPath = window.location.pathname;
+
+  function updatePage() {
+    currentPath = window.location.pathname;
+  }
+
+  window.addEventListener("click", (e) => {
+    if (
+      !(e.target instanceof Element) ||
+      (!(e.target as Element).matches("a") && (e.target as Element).closest("a") === null)
+    ) {
+      return;
+    }
+
+    const path = (
+      (e.target as Element).matches("a") ? (e.target as Element) : (e.target as Element).closest("a")
+    )!.getAttribute("href");
+    if (path![0] !== "/") {
+      return;
+    }
+
+    e.preventDefault();
+    history.pushState({}, "", path);
+
+    window.dispatchEvent(new Event("update-page"));
+  });
+
+  window.addEventListener("popstate", () => {
+    console.log("[popstate]", window.location.pathname);
+
+    window.dispatchEvent(new Event("update-page"));
+  });
+
+  window.addEventListener("update-page", () => {
+    console.log("[update-page]", window.location.pathname);
+
+    updatePage();
+  });
 </script>
 
 <style lang="postcss" global>
@@ -45,14 +85,6 @@
   }
 </style>
 
-{#if currentPages().length === 0}
-  <BasePage>
-    <OopsPage />
-  </BasePage>
-{:else if redirects.includes(window.location.pathname)}
-  <svelte:component this="{currentPages()[0].page}" />
-{:else}
-  <BasePage>
-    <svelte:component this="{currentPages()[0].page}" />
-  </BasePage>
-{/if}
+<BasePage path="{currentPath}">
+  <svelte:component this="{pageFromPath(currentPath)}" />
+</BasePage>

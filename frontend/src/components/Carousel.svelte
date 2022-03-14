@@ -3,7 +3,7 @@
     (parseInt(getComputedStyle(document.documentElement).getPropertyValue("--grid-column-width")) +
       parseInt(getComputedStyle(document.documentElement).getPropertyValue("--grid-gutter-width"))) *
     2;
-  let list = [
+  const list = [
     { image: "A", description: "a" },
     { image: "B", description: "b" },
     { image: "C", description: "c" },
@@ -15,6 +15,12 @@
   let scrollable: HTMLElement;
 </script>
 
+<style lang="postcss">
+  .button {
+    @apply w-[var(--grid-column-1)] h-[var(--grid-column-1)] bg-violet-500 mb-[70px];
+  }
+</style>
+
 <section class="w-full flex flex-row gap-x-[var(--grid-gutter-width)] items-center justify-between">
   <button
     class="button"
@@ -22,7 +28,7 @@
       scrollable.scrollLeft -= scrollSize;
       idx -= 1;
     }}"
-    disabled="{idx == 0}">LButton</button
+    disabled="{idx === 0}">LButton</button
   >
   <section
     class="w-[var(--grid-column-10)] flex flex-row gap-x-[var(--grid-gutter-width)] justify-start overflow-hidden"
@@ -43,12 +49,6 @@
       scrollable.scrollLeft += scrollSize;
       idx += 1;
     }}"
-    disabled="{idx + 5 == list.length}">RButton</button
+    disabled="{idx + 5 === list.length}">RButton</button
   >
 </section>
-
-<style lang="postcss">
-  .button {
-    @apply w-[var(--grid-column-1)] h-[var(--grid-column-1)] bg-violet-500 mb-[70px];
-  }
-</style>
