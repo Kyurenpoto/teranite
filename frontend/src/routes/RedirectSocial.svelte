@@ -7,7 +7,7 @@
   const validTokenTypes = ["github"];
 
   afterUpdate(async () => {
-    if (localStorage.hasAccount === true) {
+    if ($hasAccount === true) {
       history.replaceState({}, "", "/");
 
       window.dispatchEvent(new Event("update-page"));
