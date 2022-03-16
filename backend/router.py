@@ -2,9 +2,8 @@ from enum import Enum, auto
 from functools import reduce
 from typing import NamedTuple
 
-from fastapi import Request, status
+from fastapi import APIRouter, Request, status
 from fastapi.responses import FileResponse, JSONResponse
-from fastapi import APIRouter
 
 
 class PathType(Enum):
@@ -49,7 +48,6 @@ def getMultiPaths(paths: list[str]):
 
 from fastapi.templating import Jinja2Templates
 
-
 templates = Jinja2Templates(directory="static")
 
 
@@ -77,12 +75,19 @@ async def static(request: Request):
     return FileResponse(f"static{request.url.path}")
 
 
-from github import Code, GithubOAuth
+from adapter.token_json_encoder import TokenJsonEncoder
+from usecase.github_login import GithubLoginWithoutToken
+from usecase.request_object import GithubLoginWithoutTokenRequest
 
 
 @router.post("/token/{sns_type:path}")
-async def token(code: Code, sns_type: str):
+async def token(code: str, sns_type: str):
     if sns_type == "github":
-        return await GithubOAuth(clientId="", clientSecret="").execute(code)
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=TokenJsonEncoder().from_token(
+                (await GithubLoginWithoutToken().login(GithubLoginWithoutTokenRequest(code)))
+            ),
+        )
 
     return JSONResponse(status_code=status.HTTP_404_NOT_FOUND)
