@@ -1,0 +1,2 @@
+class GithubTemporaryCode(str):
+    pass
