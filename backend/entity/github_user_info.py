@@ -1,5 +1,5 @@
 from typing import NamedTuple
 
 
-class UserInfo(NamedTuple):
+class GithubUserInfo(NamedTuple):
     email: str

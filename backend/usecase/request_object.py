@@ -2,25 +2,28 @@ from typing import NamedTuple
 
 from ..entity.auth_token import GithubAuthToken
 from ..entity.github_temporary_code import GithubTemporaryCode
-from ..entity.user_info import UserInfo
+from ..entity.github_user_info import GithubUserInfo
 
 
 class GithubIssueTokenRequest(GithubTemporaryCode):
     pass
 
 
-class GithubAccessUserInfoRequest(NamedTuple):
-    authToken: GithubAuthToken
-    userInfo: UserInfo
+class GithubAccessUserInfoRequest(GithubAuthToken):
+    pass
 
 
-class GithubUpdateUserAuthTokenRequest(NamedTuple):
-    userInfo: UserInfo
-    authToken: GithubAuthToken
+class GithubUserExistanceRequest(GithubUserInfo):
+    pass
 
 
 class GithubCreateUserRequest(NamedTuple):
-    userInfo: UserInfo
+    userInfo: GithubUserInfo
+    authToken: GithubAuthToken
+
+
+class GithubUpdateUserAuthTokenRequest(NamedTuple):
+    userInfo: GithubUserInfo
     authToken: GithubAuthToken
 
 

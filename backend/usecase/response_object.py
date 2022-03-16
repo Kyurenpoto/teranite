@@ -1,49 +1,20 @@
 from typing import NamedTuple
 
 from ..entity.auth_token import GithubAuthToken, UserAuthToken
-from ..entity.user_info import UserInfo
+from ..entity.github_user_info import GithubUserInfo
 
 
-class GithubIssueTokenSuccessResponse(GithubAuthToken):
+class GithubIssueTokenResponse(GithubAuthToken):
     pass
 
 
-class GithubIssueTokenFailResponse(NamedTuple):
-    failure_type: str
-    message: str
-
-
-class GithubAccessUserInfoSuccessResponse(UserInfo):
+class GithubAccessUserInfoResponse(GithubUserInfo):
     pass
 
 
-class GithubAccessUserInfoFailResponse(NamedTuple):
-    failure_type: str
-    message: str
+class GithubUserExistanceResponse(NamedTuple):
+    result: bool
 
 
-class GithubCreateUserSuccessResponse(NamedTuple):
+class GithubLoginWithoutTokenResponse(UserAuthToken):
     pass
-
-
-class GithubCreateUserFailResponse(NamedTuple):
-    failure_type: str
-    message: str
-
-
-class GithubUpdateUserAuthTokenSuccessResponse(NamedTuple):
-    pass
-
-
-class GithubUpdateUserAuthTokenFailResponse(NamedTuple):
-    failure_type: str
-    message: str
-
-
-class GithubLoginWithoutTokenSuccessResponse(UserAuthToken):
-    pass
-
-
-class GithubLoginWithoutTokenFailResponse(NamedTuple):
-    failure_type: str
-    message: str
