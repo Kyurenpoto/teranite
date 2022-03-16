@@ -1,11 +1,11 @@
 <script lang="ts">
+  import { hasAccount } from "../stores/hasAccount";
   import NavLink from "./NavLink.svelte";
-  import { hasAccount } from "../stores.js";
 
-  let class_name = "";
-  export { class_name as class };
+  let className = "";
+  export { className as class };
 
-  const l_nav = [
+  const lNav = [
     { image: "home", link: "/" },
     { image: "rank", link: "/rank" },
     { image: "explore", link: "/explore" },
@@ -21,18 +21,24 @@
   }
 </style>
 
-<header class="w-full mt-0 grid place-items-center {class_name}">
+<header class="w-full mt-0 grid place-items-center {className}">
   <section class="flex flex-col gap-y-10">
     <nav class="w-[var(--grid-column-12)] h-20 flex flex-row items-center justify-between">
       <section class="nav-list">
-        {#each l_nav as { image, link }}
+        {#each lNav as { image, link }}
           <NavLink link="{link}">
             {image}
           </NavLink>
         {/each}
       </section>
       <section class="nav-list">
-        <button class="w-[var(--grid-column-3)] nav-link" on:click="{hasAccount.toggle}">account</button>
+        {#if $hasAccount === true}
+          <button class="w-[var(--grid-column-3)] nav-link" on:click="{hasAccount.toggle}">logout</button>
+        {:else}
+          <a href="/login">
+            <button class="w-[var(--grid-column-3)] nav-link">login</button>
+          </a>
+        {/if}
       </section>
     </nav>
     <slot />

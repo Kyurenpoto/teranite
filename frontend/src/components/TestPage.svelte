@@ -10,17 +10,6 @@
   });
 </script>
 
-<div class="App">
-  <header class="App-header">
-    <img src="/logo.svg" class="App-logo" alt="logo" />
-    <p>Edit <code>src/App.svelte</code> and save to reload.</p>
-    <p>Page has been open for <code>{count}</code> seconds.</p>
-    <p>
-      <a class="App-link" href="https://svelte.dev" target="_blank" rel="noopener noreferrer"> Learn Svelte </a>
-    </p>
-  </header>
-</div>
-
 <style lang="postcss">
   :global(body) {
     margin: 0;
@@ -72,3 +61,14 @@
     }
   }
 </style>
+
+<div class="App">
+  <header class="App-header">
+    <img src="/logo.svg" class="App-logo" alt="logo" />
+    <p>Edit <code>src/App.svelte</code> and save to reload.</p>
+    <p>Page has been open for <code>{count}</code> seconds.</p>
+    <p>
+      <a class="App-link" href="https://svelte.dev" target="_blank" rel="noopener noreferrer"> Learn Svelte </a>
+    </p>
+  </header>
+</div>

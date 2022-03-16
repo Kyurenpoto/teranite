@@ -1,11 +1,11 @@
 <script lang="ts">
   import NavLink from "./NavLink.svelte";
 
-  let class_name = "";
-  export { class_name as class };
+  let className = "";
+  export { className as class };
 </script>
 
-<footer class="h-20 w-full mb-0 mt-auto grid place-items-center {class_name}">
+<footer class="h-20 w-full mb-0 mt-auto grid place-items-center {className}">
   <section class="w-[var(--grid-column-12)] h-full flex flex-row items-center justify-between">
     <div class="h-full">
       <NavLink link="/">home</NavLink>

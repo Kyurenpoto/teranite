@@ -4,8 +4,24 @@
   "[svelte]": {
     "editor.defaultFormatter": "svelte.svelte-vscode"
   },
+  "[python]": {
+    "editor.wordBasedSuggestions": true,
+    "editor.defaultFormatter": "ms-python.python"
+  },
   "svelte.plugin.svelte.format.config.printWidth": 120,
-  "prettier.printWidth": 120,
   "eslint.validate": ["svelte"],
-  "git.allowForcePush": true
+  "git.allowForcePush": true,
+  "python.linting.mypyEnabled": true,
+  "python.linting.enabled": true,
+  "editor.formatOnSave": true,
+  "python.formatting.provider": "black",
+  "python.linting.lintOnSave": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.mypyArgs": [
+    "--follow-imports=silent",
+    "--ignore-missing-imports",
+    "--show-column-numbers",
+    "--no-pretty",
+    "--python-version=3.10.2"
+  ]
 }

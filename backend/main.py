@@ -1,10 +1,30 @@
-import os
+from database import models
+from database.database import engine
 
-from fastapi import FastAPI, Request
+models.Base.metadata.create_all(bind=engine)
+
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+from router import router
 
 app = FastAPI()
+app.include_router(router)
 
-app.mount("/", StaticFiles(directory=os.path.join(BASE_DIR, "static"), html=True), name="static")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8000", "localhost:8000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+import github
+from config import container
+
+app.state.container = container
+app.state.container.wire(modules=[github])
