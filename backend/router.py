@@ -75,19 +75,35 @@ async def static(request: Request):
     return FileResponse(f"static{request.url.path}")
 
 
+from pydantic import BaseModel
+
 from adapter.token_json_encoder import TokenJsonEncoder
+from repository.github_authtoken_repository import WebGithubAuthTokenRepository
+from repository.github_user_repository import SQLiteGithubUserRepository
+from repository.github_userinfo_repository import WebGithubUserInfoRepository
 from usecase.github_login import GithubLoginWithoutToken
 from usecase.request_object import GithubLoginWithoutTokenRequest
 
 
-@router.post("/token/{sns_type:path}")
-async def token(code: str, sns_type: str):
-    if sns_type == "github":
-        return JSONResponse(
-            status_code=status.HTTP_200_OK,
-            content=TokenJsonEncoder().from_token(
-                (await GithubLoginWithoutToken().login(GithubLoginWithoutTokenRequest(code)))
-            ),
-        )
+class TemporaryCode(BaseModel):
+    code: str
 
-    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND)
+
+@router.post("/token/{sns_type:path}")
+async def token(code: TemporaryCode, sns_type: str):
+    try:
+        if sns_type == "github":
+            return JSONResponse(
+                status_code=status.HTTP_200_OK,
+                content=TokenJsonEncoder().from_token(
+                    (
+                        await GithubLoginWithoutToken.from_repositories(
+                            WebGithubAuthTokenRepository(), WebGithubUserInfoRepository(), SQLiteGithubUserRepository()
+                        ).login(GithubLoginWithoutTokenRequest(code.code))
+                    )
+                ),
+            )
+
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND)
+    except RuntimeError as e:
+        print(e)
