@@ -1,10 +1,7 @@
 from abc import ABC, abstractmethod
 
-from dependency_injector.wiring import Provide, inject
-
-from config import Container
+from dependency import Container
 from database import crud, models, schemas
-from database.database import DB
 from entity.auth_token import GithubAuthToken
 from entity.github_user import GithubUser
 
@@ -24,18 +21,16 @@ class GithubUserRepository(ABC):
 
 
 class SQLiteGithubUserRepository(GithubUserRepository):
-    @inject
-    async def readByEmail(self, email: str, db: DB = Provide[Container.db]) -> GithubUser | None:
-        match crud.readUser(db.db, email):
+    async def readByEmail(self, email: str) -> GithubUser | None:
+        match crud.readUser(Container.db.db, email):
             case models.User(email=userEmail, github_access_token=accessToken, github_refresh_token=refreshToken):
                 return GithubUser(userEmail, GithubAuthToken(accessToken, refreshToken))
             
         return None
 
-    @inject
-    async def create(self, user: GithubUser, db: DB = Provide[Container.db]):
+    async def create(self, user: GithubUser):
         crud.createUser(
-            db.db,
+            Container.db.db,
             schemas.User(
                 email=user.email,
                 githubAccessToken=user.authToken.accessToken,
@@ -43,10 +38,9 @@ class SQLiteGithubUserRepository(GithubUserRepository):
             ),
         )
 
-    @inject
-    async def updateAuthToken(self, email: str, authToken: GithubAuthToken, db: DB = Provide[Container.db]):
+    async def updateAuthToken(self, email: str, authToken: GithubAuthToken):
         crud.updateUser(
-            db.db,
+            Container.db.db,
             email=email,
             accessToken=authToken.accessToken,
             refreshToken=authToken.refreshToken,

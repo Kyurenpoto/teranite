@@ -13,7 +13,6 @@ respx = "^0.19.1"
 Jinja2 = "^3.0.3"
 aiofiles = "^0.8.0"
 SQLAlchemy = "^1.4.32"
-dependency-injector = "^4.38.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"

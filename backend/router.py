@@ -98,7 +98,9 @@ async def token(code: TemporaryCode, sns_type: str):
                 content=TokenJsonEncoder().from_token(
                     (
                         await GithubLoginWithoutToken.from_repositories(
-                            WebGithubAuthTokenRepository(), WebGithubUserInfoRepository(), SQLiteGithubUserRepository()
+                            WebGithubAuthTokenRepository(),
+                            WebGithubUserInfoRepository(),
+                            SQLiteGithubUserRepository(),
                         ).login(GithubLoginWithoutTokenRequest(code.code))
                     )
                 ),
