@@ -1,67 +1,51 @@
 from typing import NamedTuple
 
+from entity.auth_token import GithubAuthToken, UserAuthToken
 from entity.github_temporary_code import GithubTemporaryCode
-
-from entity.auth_token import GithubAuthToken
 from entity.github_user import GithubUser
+from entity.github_user_info import GithubUserInfo
 from repository.github_authtoken_repository import GithubAuthTokenRepository
 from repository.github_user_repository import GithubUserRepository
 from repository.github_userinfo_repository import GithubUserInfoRepository
-from .request_object import (
-    GithubAccessUserInfoRequest,
-    GithubCreateUserRequest,
-    GithubIssueTokenRequest,
-    GithubLoginWithoutTokenRequest,
-    GithubUpdateUserAuthTokenRequest,
-    GithubUserExistanceRequest
-)
-from .response_object import (
-    GithubAccessUserInfoResponse,
-    GithubIssueTokenResponse,
-    GithubLoginWithoutTokenResponse,
-    GithubUserExistanceResponse
-)
 
 
 class GithubIssueToken(NamedTuple):
     repository: GithubAuthTokenRepository
     
-    async def issue(self, request: GithubIssueTokenRequest) -> GithubIssueTokenResponse:
-        return GithubIssueTokenResponse._make(await self.repository.findByTemporaryCode(GithubTemporaryCode(request)))
+    async def issue(self, code: GithubTemporaryCode) -> GithubAuthToken:
+        return await self.repository.findByTemporaryCode(code)
 
 
 class GithubAccessUserInfo(NamedTuple):
     repository: GithubUserInfoRepository
     
-    async def access(self, request: GithubAccessUserInfoRequest) -> GithubAccessUserInfoResponse:
-        return GithubAccessUserInfoResponse._make(
-            await self.repository.findByAuthToken(GithubAuthToken._make(request))
-        )
+    async def access(self, authToken: GithubAuthToken) -> GithubUserInfo:
+        return await self.repository.findByAuthToken(authToken)
 
 
 class GithubUserExistance(NamedTuple):
     repository: GithubUserRepository
     
-    async def exist(self, request: GithubUserExistanceRequest) -> GithubUserExistanceResponse:
-        match await self.repository.readByEmail(request.email):
+    async def exist(self, userInfo: GithubUserInfo) -> bool:
+        match await self.repository.readByEmail(userInfo.email):
             case GithubUser():
-                return GithubUserExistanceResponse(True)
+                return True
             
-        return GithubUserExistanceResponse(False)
+        return False
 
 
 class GithubCreateUser(NamedTuple):
     repository: GithubUserRepository
     
-    async def create(self, request: GithubCreateUserRequest):
-        await self.repository.create(GithubUser(email=request.userInfo.email, authToken=request.authToken))
+    async def create(self, userInfo: GithubUserInfo, authToken: GithubAuthToken):
+        await self.repository.create(GithubUser(email=userInfo.email, authToken=authToken))
 
 
 class GithubUpdateUserAuthToken(NamedTuple):
     repository: GithubUserRepository
     
-    async def update(self, request: GithubUpdateUserAuthTokenRequest):
-        await self.repository.updateAuthToken(email=request.userInfo.email, authToken=request.authToken)
+    async def update(self, userInfo: GithubUserInfo, authToken: GithubAuthToken):
+        await self.repository.updateAuthToken(email=userInfo.email, authToken=authToken)
 
 
 class GithubLoginWithoutToken(NamedTuple):
@@ -86,15 +70,15 @@ class GithubLoginWithoutToken(NamedTuple):
             GithubUpdateUserAuthToken(userRepository)
         )
 
-    async def login(self, request: GithubLoginWithoutTokenRequest) -> GithubLoginWithoutTokenResponse:
-        authToken = GithubAuthToken._make(await self.issueToken.issue(GithubIssueTokenRequest(str(request))))
-        userInfo = await self.accessUserInfo.access(GithubAccessUserInfoRequest._make(authToken))
+    async def login(self, code: GithubTemporaryCode) -> UserAuthToken:
+        authToken = await self.issueToken.issue(code)
+        userInfo = await self.accessUserInfo.access(authToken)
 
-        if (await self.userExistance.exist(GithubUserExistanceRequest._make(userInfo))).result:
-            await self.updateUserAuthToken.update(GithubUpdateUserAuthTokenRequest(userInfo, authToken))
+        if (await self.userExistance.exist(userInfo)):
+            await self.updateUserAuthToken.update(userInfo, authToken)
 
-            return GithubLoginWithoutTokenResponse(userInfo.email, userInfo.email)
+            return UserAuthToken(userInfo.email, userInfo.email)
         else:
-            await self.createUser.create(GithubCreateUserRequest(userInfo, authToken))
+            await self.createUser.create(userInfo, authToken)
 
-            return GithubLoginWithoutTokenResponse(userInfo.email, userInfo.email)
+            return UserAuthToken(userInfo.email, userInfo.email)

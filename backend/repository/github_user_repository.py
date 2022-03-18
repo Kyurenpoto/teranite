@@ -24,7 +24,7 @@ class SQLiteGithubUserRepository(GithubUserRepository):
     async def readByEmail(self, email: str) -> GithubUser | None:
         match crud.readUser(Container.db.db, email):
             case models.User(email=userEmail, github_access_token=accessToken, github_refresh_token=refreshToken):
-                return GithubUser(userEmail, GithubAuthToken(accessToken, refreshToken))
+                return GithubUser(str(userEmail), GithubAuthToken(str(accessToken), str(refreshToken)))
             
         return None
 
