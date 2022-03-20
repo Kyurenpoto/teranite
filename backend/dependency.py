@@ -1,13 +1,17 @@
 from typing import NamedTuple
 
-from database.database import DB
+
+class Provider(NamedTuple):
+    container = [{}]
+
+    def dependency(self, name: str):
+        return self.container[0][name]
+
+    def wire(self, container: dict):
+        self.container[0] = container
+
+    def unwire(self):
+        self.container[0] = {}
 
 
-class GithubConfig(NamedTuple):
-    clientId: str
-    clientSecret: str
-
-
-class Container(NamedTuple):
-    db = DB()
-    githubConfig = GithubConfig(clientId="", clientSecret="")
+provider = Provider()

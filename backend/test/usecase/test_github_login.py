@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import pytest
 from entity.auth_token import GithubAuthToken
@@ -6,6 +6,7 @@ from entity.github_temporary_code import GithubTemporaryCode
 from entity.github_user import GithubUser
 from entity.github_user_info import GithubUserInfo
 from hypothesis import given, strategies
+from dependency import provider
 from repository.github_authtoken_repository import GithubAuthTokenRepository
 from repository.github_user_repository import GithubUserRepository
 from repository.github_userinfo_repository import GithubUserInfoRepository
@@ -23,13 +24,7 @@ class FakeGithubAuthTokenRepository(GithubAuthTokenRepository):
         return GithubAuthToken("access_token", "refresh_token")
 
 
-class FakeUser(ABC):
-    @abstractmethod
-    async def fake(self, email: str) -> GithubUser | None:
-        pass
-
-
-class FakeGithubUserRepositoryBase(GithubUserRepository, FakeUser):
+class FakeGithubUserRepositoryBase(GithubUserRepository):
     def __init__(self):
         self.exec = []
 
@@ -43,6 +38,10 @@ class FakeGithubUserRepositoryBase(GithubUserRepository, FakeUser):
 
     async def updateAuthToken(self, email: str, authToken: GithubAuthToken):
         self.exec += [f"updateAuthToken: {email}, {authToken}"]
+
+    @abstractmethod
+    async def fake(self, email: str) -> GithubUser | None:
+        pass
 
 
 class FakeGithubUserRepository(FakeGithubUserRepositoryBase):
@@ -68,9 +67,14 @@ class FakeGithubUserInfoRepository(GithubUserInfoRepository):
 @pytest.mark.asyncio
 @given(strategies.characters())
 async def test_login(code: str):
-    usecase = GithubLoginWithoutToken.from_repositories(
-        FakeGithubAuthTokenRepository(), FakeGithubUserInfoRepository(), FakeGithubUserRepository()
+    provider.wire(
+        {
+            "auth-token-repo": FakeGithubAuthTokenRepository(),
+            "user-info-repo": FakeGithubUserInfoRepository(),
+            "user-repo": FakeGithubUserRepository(),
+        }
     )
-    result = await usecase.login(GithubTemporaryCode(code))
+
+    result = await GithubLoginWithoutToken().login(GithubTemporaryCode(code))
 
     assert result.accessToken == "heal9179@gmail.com" and result.refreshToken == "heal9179@gmail.com"

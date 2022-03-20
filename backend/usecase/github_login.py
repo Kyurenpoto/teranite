@@ -1,84 +1,49 @@
-from typing import NamedTuple
-
 from entity.auth_token import GithubAuthToken, UserAuthToken
 from entity.github_temporary_code import GithubTemporaryCode
 from entity.github_user import GithubUser
 from entity.github_user_info import GithubUserInfo
-from repository.github_authtoken_repository import GithubAuthTokenRepository
-from repository.github_user_repository import GithubUserRepository
-from repository.github_userinfo_repository import GithubUserInfoRepository
+from dependency import provider
 
 
-class GithubIssueToken(NamedTuple):
-    repository: GithubAuthTokenRepository
-    
+class GithubIssueToken:    
     async def issue(self, code: GithubTemporaryCode) -> GithubAuthToken:
-        return await self.repository.findByTemporaryCode(code)
+        return await provider.dependency("auth-token-repo").findByTemporaryCode(code)
 
 
-class GithubAccessUserInfo(NamedTuple):
-    repository: GithubUserInfoRepository
-    
+class GithubAccessUserInfo:    
     async def access(self, authToken: GithubAuthToken) -> GithubUserInfo:
-        return await self.repository.findByAuthToken(authToken)
+        return await provider.dependency("user-info-repo").findByAuthToken(authToken)
 
 
-class GithubUserExistance(NamedTuple):
-    repository: GithubUserRepository
-    
+class GithubUserExistance:    
     async def exist(self, userInfo: GithubUserInfo) -> bool:
-        match await self.repository.readByEmail(userInfo.email):
+        match await provider.dependency("user-repo").readByEmail(userInfo.email):
             case GithubUser():
                 return True
             
         return False
 
 
-class GithubCreateUser(NamedTuple):
-    repository: GithubUserRepository
-    
+class GithubCreateUser:    
     async def create(self, userInfo: GithubUserInfo, authToken: GithubAuthToken):
-        await self.repository.create(GithubUser(email=userInfo.email, authToken=authToken))
+        await provider.dependency("user-repo").create(GithubUser(email=userInfo.email, authToken=authToken))
 
 
-class GithubUpdateUserAuthToken(NamedTuple):
-    repository: GithubUserRepository
-    
+class GithubUpdateUserAuthToken:    
     async def update(self, userInfo: GithubUserInfo, authToken: GithubAuthToken):
-        await self.repository.updateAuthToken(email=userInfo.email, authToken=authToken)
+        await provider.dependency("user-repo").updateAuthToken(email=userInfo.email, authToken=authToken)
 
 
-class GithubLoginWithoutToken(NamedTuple):
-    issueToken: GithubIssueToken
-    accessUserInfo: GithubAccessUserInfo
-    userExistance: GithubUserExistance
-    createUser: GithubCreateUser
-    updateUserAuthToken: GithubUpdateUserAuthToken
-    
-    @classmethod
-    def from_repositories(
-        cls,
-        authTokenRepository: GithubAuthTokenRepository,
-        userInfoRepository: GithubUserInfoRepository,
-        userRepository: GithubUserRepository
-    ):
-        return GithubLoginWithoutToken(
-            GithubIssueToken(authTokenRepository),
-            GithubAccessUserInfo(userInfoRepository),
-            GithubUserExistance(userRepository),
-            GithubCreateUser(userRepository),
-            GithubUpdateUserAuthToken(userRepository)
-        )
-
+class GithubLoginWithoutToken:
     async def login(self, code: GithubTemporaryCode) -> UserAuthToken:
-        authToken = await self.issueToken.issue(code)
-        userInfo = await self.accessUserInfo.access(authToken)
+        authToken = await GithubIssueToken().issue(code)
+        userInfo = await GithubAccessUserInfo().access(authToken)
 
-        if (await self.userExistance.exist(userInfo)):
-            await self.updateUserAuthToken.update(userInfo, authToken)
+        if (await GithubUserExistance().exist(userInfo)):
+            await GithubUpdateUserAuthToken().update(userInfo, authToken)
 
             return UserAuthToken(userInfo.email, userInfo.email)
         else:
-            await self.createUser.create(userInfo, authToken)
+            await GithubCreateUser().create(userInfo, authToken)
 
             return UserAuthToken(userInfo.email, userInfo.email)

@@ -79,9 +79,6 @@ from pydantic import BaseModel
 
 from adapter.token_json_encoder import TokenJsonEncoder
 from entity.github_temporary_code import GithubTemporaryCode
-from repository.github_authtoken_repository import WebGithubAuthTokenRepository
-from repository.github_user_repository import SQLiteGithubUserRepository
-from repository.github_userinfo_repository import WebGithubUserInfoRepository
 from usecase.github_login import GithubLoginWithoutToken
 
 
@@ -96,13 +93,7 @@ async def token(code: TemporaryCode, sns_type: str):
             return JSONResponse(
                 status_code=status.HTTP_200_OK,
                 content=TokenJsonEncoder().from_token(
-                    (
-                        await GithubLoginWithoutToken.from_repositories(
-                            WebGithubAuthTokenRepository(),
-                            WebGithubUserInfoRepository(),
-                            SQLiteGithubUserRepository(),
-                        ).login(GithubTemporaryCode(code.code))
-                    )
+                    (await GithubLoginWithoutToken().login(GithubTemporaryCode(code.code)))
                 ),
             )
 

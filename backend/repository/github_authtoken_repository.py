@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 
-from httpx import AsyncClient
-
-from dependency import Container
 from entity.auth_token import GithubAuthToken
 from entity.github_temporary_code import GithubTemporaryCode
+from httpx import AsyncClient
+from dependency import provider
 
 
 class GithubAuthTokenRepository(ABC):
@@ -21,8 +20,8 @@ class WebGithubAuthTokenRepository(GithubAuthTokenRepository):
                     url="https://github.com/login/oauth/access_token",
                     headers={"Accept": "application/json"},
                     params={
-                        "client_id": Container.githubConfig.clientId,
-                        "client_secret": Container.githubConfig.clientSecret,
+                        "client_id": provider.dependency("github-config")["client-id"],
+                        "client_secret": provider.dependency("github-config")["client-secret"],
                         "code": str(code),
                     },
                     timeout=1.0,
