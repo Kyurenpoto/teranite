@@ -22,7 +22,7 @@ class GithubUserRepository(ABC):
 
 class SQLiteGithubUserRepository(GithubUserRepository):
     async def readByEmail(self, email: str) -> GithubUser | None:
-        match crud.readUser(provider.dependency("db").db, email):
+        match crud.readUser(provider["db"].db, email):
             case models.User(email=userEmail, github_access_token=accessToken, github_refresh_token=refreshToken):
                 return GithubUser(str(userEmail), GithubAuthToken(str(accessToken), str(refreshToken)))
             
@@ -30,7 +30,7 @@ class SQLiteGithubUserRepository(GithubUserRepository):
 
     async def create(self, user: GithubUser):
         crud.createUser(
-            provider.dependency("db").db,
+            provider["db"].db,
             schemas.User(
                 email=user.email,
                 githubAccessToken=user.authToken.accessToken,
@@ -40,7 +40,7 @@ class SQLiteGithubUserRepository(GithubUserRepository):
 
     async def updateAuthToken(self, email: str, authToken: GithubAuthToken):
         crud.updateUser(
-            provider.dependency("db").db,
+            provider["db"].db,
             email=email,
             accessToken=authToken.accessToken,
             refreshToken=authToken.refreshToken,

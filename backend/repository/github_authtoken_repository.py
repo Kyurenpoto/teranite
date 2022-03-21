@@ -20,8 +20,8 @@ class WebGithubAuthTokenRepository(GithubAuthTokenRepository):
                     url="https://github.com/login/oauth/access_token",
                     headers={"Accept": "application/json"},
                     params={
-                        "client_id": provider.dependency("github-config")["client-id"],
-                        "client_secret": provider.dependency("github-config")["client-secret"],
+                        "client_id": provider["github-config"]["client-id"],
+                        "client_secret": provider["github-config"]["client-secret"],
                         "code": str(code),
                     },
                     timeout=1.0,

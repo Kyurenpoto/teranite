@@ -1,17 +1,21 @@
 from typing import NamedTuple
 
 
-class Provider(NamedTuple):
-    container = [{}]
+class Container:
+    pass
 
-    def dependency(self, name: str):
-        return self.container[0][name]
+
+class Provider(NamedTuple):
+    container = Container()
+
+    def __getitem__(self, name):
+        return self.container.__dict__[name]
 
     def wire(self, container: dict):
-        self.container[0] = container
+        self.container.__dict__ = container
 
     def unwire(self):
-        self.container[0] = {}
+        self.container.__dict__ = {}
 
 
 provider = Provider()
