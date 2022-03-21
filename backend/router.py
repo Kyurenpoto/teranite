@@ -77,7 +77,7 @@ async def static(request: Request):
 
 from pydantic import BaseModel
 
-from adapter.token_json_encoder import TokenJsonEncoder
+from adapter.to_json_encoder import TokenJsonEncoder
 from entity.github_temporary_code import GithubTemporaryCode
 from usecase.github_login import GithubLoginWithoutToken
 
@@ -92,7 +92,7 @@ async def token(code: TemporaryCode, sns_type: str):
         if sns_type == "github":
             return JSONResponse(
                 status_code=status.HTTP_200_OK,
-                content=TokenJsonEncoder().from_token(
+                content=TokenJsonEncoder.from_token(
                     (await GithubLoginWithoutToken().login(GithubTemporaryCode(code.code)))
                 ),
             )

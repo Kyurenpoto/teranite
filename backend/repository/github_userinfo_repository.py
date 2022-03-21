@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
-from httpx import AsyncClient
-
+from adapter.from_json_decoder import JsonUserInfoDecoder
 from entity.auth_token import GithubAuthToken
 from entity.github_user_info import GithubUserInfo
+from httpx import AsyncClient
 
 
 class GithubUserInfoRepository(ABC):
@@ -23,4 +23,4 @@ class WebGithubUserInfoRepository(GithubUserInfoRepository):
                 )
             ).json()
 
-            return GithubUserInfo(email=response["email"])
+            return JsonUserInfoDecoder.from_json(response)

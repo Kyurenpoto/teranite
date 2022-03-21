@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 
+from adapter.from_json_decoder import JsonAuthTokenDecoder
+from dependency import provider
 from entity.auth_token import GithubAuthToken
 from entity.github_temporary_code import GithubTemporaryCode
 from httpx import AsyncClient
-from dependency import provider
 
 
 class GithubAuthTokenRepository(ABC):
@@ -28,7 +29,4 @@ class WebGithubAuthTokenRepository(GithubAuthTokenRepository):
                 )
             ).json()
 
-            return GithubAuthToken(
-                accessToken=response["access_token"],
-                refreshToken=response["refresh_token"],
-            )
+            return JsonAuthTokenDecoder.from_json(response)
