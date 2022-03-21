@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from adapter.from_json_decoder import JsonUserInfoDecoder
+from adaptor.from_json_decoder import JsonUserInfoDecoder
 from entity.auth_token import GithubAuthToken
 from entity.github_user_info import GithubUserInfo
 from httpx import AsyncClient

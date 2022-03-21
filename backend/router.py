@@ -77,7 +77,7 @@ async def static(request: Request):
 
 from pydantic import BaseModel
 
-from adapter.to_json_encoder import TokenJsonEncoder
+from adaptor.to_json_encoder import TokenJsonEncoder
 from entity.github_temporary_code import GithubTemporaryCode
 from usecase.github_login import GithubLoginWithoutToken
 

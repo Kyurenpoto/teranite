@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from adapter.from_json_decoder import JsonAuthTokenDecoder
+from adaptor.from_json_decoder import JsonAuthTokenDecoder
 from dependency import provider
 from entity.auth_token import GithubAuthToken
 from entity.github_temporary_code import GithubTemporaryCode
