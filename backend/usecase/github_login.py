@@ -3,21 +3,33 @@ from entity.auth_token import GithubAuthToken, UserAuthToken
 from entity.github_temporary_code import GithubTemporaryCode
 from entity.github_user import GithubUser
 from entity.github_user_info import GithubUserInfo
+from repository.github_authtoken_repository import GithubAuthTokenRepository
+from repository.github_user_repository import GithubUserRepository
+from repository.github_userinfo_repository import GithubUserInfoRepository
 
 
-class GithubIssueToken:    
+class GithubIssueToken:
+    def __init__(self):
+        self.repository: GithubAuthTokenRepository = provider["auth-token-repo"]
+    
     async def issue(self, code: GithubTemporaryCode) -> GithubAuthToken:
-        return await provider["auth-token-repo"].findByTemporaryCode(code)
+        return await self.repository.findByTemporaryCode(code)
 
 
 class GithubAccessUserInfo:
+    def __init__(self):
+        self.repository: GithubUserInfoRepository = provider["user-info-repo"]
+    
     async def access(self, authToken: GithubAuthToken) -> GithubUserInfo:
-        return await provider["user-info-repo"].findByAuthToken(authToken)
+        return await self.repository.findByAuthToken(authToken)
 
 
 class GithubUserExistance:
+    def __init__(self):
+        self.repository: GithubUserRepository = provider["user-repo"]
+    
     async def exist(self, userInfo: GithubUserInfo) -> bool:
-        match await provider["user-repo"].readByEmail(userInfo.email):
+        match await self.repository.readByEmail(userInfo.email):
             case GithubUser():
                 return True
             
@@ -25,13 +37,19 @@ class GithubUserExistance:
 
 
 class GithubCreateUser:
+    def __init__(self):
+        self.repository: GithubUserRepository = provider["user-repo"]
+        
     async def create(self, userInfo: GithubUserInfo, authToken: GithubAuthToken):
-        await provider["user-repo"].create(GithubUser(email=userInfo.email, authToken=authToken))
+        await self.repository.create(GithubUser(email=userInfo.email, authToken=authToken))
 
 
 class GithubUpdateUserAuthToken:
+    def __init__(self):
+        self.repository: GithubUserRepository = provider["user-repo"]
+        
     async def update(self, userInfo: GithubUserInfo, authToken: GithubAuthToken):
-        await provider["user-repo"].updateAuthToken(email=userInfo.email, authToken=authToken)
+        await self.repository.updateAuthToken(email=userInfo.email, authToken=authToken)
 
 
 class GithubLoginWithoutToken:
@@ -40,10 +58,12 @@ class GithubLoginWithoutToken:
         userInfo = await GithubAccessUserInfo().access(authToken)
 
         if (await GithubUserExistance().exist(userInfo)):
+            print("update")
             await GithubUpdateUserAuthToken().update(userInfo, authToken)
 
             return UserAuthToken(userInfo.email, userInfo.email)
         else:
+            print("create")
             await GithubCreateUser().create(userInfo, authToken)
 
             return UserAuthToken(userInfo.email, userInfo.email)

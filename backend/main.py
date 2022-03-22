@@ -28,9 +28,9 @@ from datasource.github_authtoken_datasource import GithubAuthTokenAPIDataSource
 from datasource.github_user_datasource import GithubUserDBDataSource
 from datasource.github_userinfo_datasource import GithubUserInfoAPIDataSource
 from dependency import TypeValue, provider
-from repository.github_authtoken_repository import WebGithubAuthTokenRepository
-from repository.github_user_repository import SQLiteGithubUserRepository
-from repository.github_userinfo_repository import WebGithubUserInfoRepository
+from repository.github_authtoken_simple_repository import GithubAuthTokenSimpleRepository
+from repository.github_user_simple_repository import GithubUserSimpleRepository
+from repository.github_userinfo_simple_repository import GithubUserInfoSimpleRepository
 
 provider.wire(
     {
@@ -40,10 +40,10 @@ provider.wire(
                 "client-secret": "",
             },
         ),
-        "db": DB(),
-        "auth-token-repo": WebGithubAuthTokenRepository,
-        "user-info-repo": WebGithubUserInfoRepository,
-        "user-repo": SQLiteGithubUserRepository,
+        "db": DB,
+        "auth-token-repo": GithubAuthTokenSimpleRepository,
+        "user-info-repo": GithubUserInfoSimpleRepository,
+        "user-repo": GithubUserSimpleRepository,
         "auth-token-api": GithubAuthTokenAPIDataSource,
         "user-info-api": GithubUserInfoAPIDataSource,
         "user-db": GithubUserDBDataSource,
