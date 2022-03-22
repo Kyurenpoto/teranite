@@ -5,6 +5,7 @@ from entity.github_user_info import GithubUserInfo
 class JsonAuthTokenDecoder:
     @classmethod
     def from_json(cls, json: dict) -> GithubAuthToken:
+        print(json)
         return GithubAuthToken(accessToken=json["access_token"], refreshToken=json["refresh_token"])
 
 

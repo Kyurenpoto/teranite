@@ -1,21 +1,46 @@
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 
-class Container:
+class TypeValue(NamedTuple):
+    value: Any
+
+    def __call__(self):
+        return self.value
+
+
+class TypeFactory(NamedTuple):
+    typeObject: type
+    params: dict
+
+    def __call__(self):
+        return self.typeObject(**self.params)
+
+
+class TypeContainer:
+    pass
+
+
+class InstanceContainer:
     pass
 
 
 class Provider(NamedTuple):
-    container = Container()
+    types = TypeContainer()
+    instances = InstanceContainer()
 
     def __getitem__(self, name):
-        return self.container.__dict__[name]
+        if name not in self.instances.__dict__:
+            self.instances.__dict__[name] = self.types.__dict__[name]()
+
+        return self.instances.__dict__[name]
 
     def wire(self, container: dict):
-        self.container.__dict__ = container
+        self.types.__dict__ = container
+        self.instances.__dict__ = {}
 
     def unwire(self):
-        self.container.__dict__ = {}
+        self.types.__dict__ = {}
+        self.instances.__dict__ = {}
 
 
 provider = Provider()

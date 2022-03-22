@@ -69,9 +69,9 @@ class FakeGithubUserInfoRepository(GithubUserInfoRepository):
 async def test_login(code: str):
     provider.wire(
         {
-            "auth-token-repo": FakeGithubAuthTokenRepository(),
-            "user-info-repo": FakeGithubUserInfoRepository(),
-            "user-repo": FakeGithubUserRepository(),
+            "auth-token-repo": FakeGithubAuthTokenRepository,
+            "user-info-repo": FakeGithubUserInfoRepository,
+            "user-repo": FakeGithubUserRepository,
         }
     )
 
