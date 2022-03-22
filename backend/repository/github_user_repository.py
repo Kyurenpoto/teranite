@@ -21,10 +21,13 @@ class GithubUserRepository(ABC):
 
 class SQLiteGithubUserRepository(GithubUserRepository):
     async def readByEmail(self, email: str) -> GithubUser | None:
-        return provider["user-db"].readUser(email)
+        match await provider["user-db"].readUser(email):
+            case {"email": email, "githubAccessToken": accessToken, "githubRefreshToken": refreshToken}:
+                return GithubUser(email, GithubAuthToken(accessToken, refreshToken))
+        return None
 
     async def create(self, user: GithubUser):
-        return provider["user-db"].createUser(user.email, user.authToken.accessToken, user.authToken.refreshToken)
+        return await provider["user-db"].createUser(user.email, user.authToken.accessToken, user.authToken.refreshToken)
 
     async def updateAuthToken(self, email: str, authToken: GithubAuthToken):
-        return provider["user-db"].updateUser(email, authToken.accessToken, authToken.refreshToken)
+        return await provider["user-db"].updateUser(email, authToken.accessToken, authToken.refreshToken)

@@ -19,12 +19,14 @@ class GithubUserDataSource(ABC):
 
 
 class GithubUserDBDataSource(GithubUserDataSource):
-    async def readUser(self, email: str) -> schemas.User | None:
+    async def readUser(self, email: str) -> dict | None:
         match crud.readUser(provider["db"].db, email):
             case models.User(email=userEmail, github_access_token=accessToken, github_refresh_token=refreshToken):
-                return schemas.User(
-                    email=str(userEmail), githubAccessToken=str(accessToken), githubRefreshToken=str(refreshToken)
-                )
+                return {
+                    "email": str(userEmail),
+                    "githubAccessToken": str(accessToken),
+                    "githubRefreshToken": str(refreshToken)
+                }
             
         return None
 
