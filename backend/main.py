@@ -29,6 +29,9 @@ from dependency import provider
 from repository.github_authtoken_repository import WebGithubAuthTokenRepository
 from repository.github_userinfo_repository import WebGithubUserInfoRepository
 from repository.github_user_repository import SQLiteGithubUserRepository
+from datasource.github_authtoken_datasource import GithubAuthTokenAPIDataSource
+from datasource.github_userinfo_datasource import GithubUserInfoAPIDataSource
+from datasource.github_user_datasource import GithubUserDBDataSource
 
 provider.wire(
     {
@@ -40,6 +43,9 @@ provider.wire(
         "auth-token-repo": WebGithubAuthTokenRepository(),
         "user-info-repo": WebGithubUserInfoRepository(),
         "user-repo": SQLiteGithubUserRepository(),
+        "auth-token-api": GithubAuthTokenAPIDataSource(),
+        "user-info-api": GithubUserInfoAPIDataSource(),
+        "user-db": GithubUserDBDataSource(),
     }
 )
 
