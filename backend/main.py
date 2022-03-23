@@ -24,9 +24,9 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-from datasource.github_authtoken_datasource import GithubAuthTokenAPIDataSource
-from datasource.github_user_datasource import GithubUserDBDataSource
-from datasource.github_userinfo_datasource import GithubUserInfoAPIDataSource
+from datasource.github_authtoken_api_datasource import GithubAuthTokenAPIDataSource
+from datasource.github_user_db_datasource import GithubUserDBDataSource
+from datasource.github_userinfo_api_datasource import GithubUserInfoAPIDataSource
 from dependency import TypeValue, provider
 from repository.github_authtoken_simple_repository import GithubAuthTokenSimpleRepository
 from repository.github_user_simple_repository import GithubUserSimpleRepository
