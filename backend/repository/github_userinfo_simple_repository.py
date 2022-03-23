@@ -7,4 +7,4 @@ from repository.github_userinfo_repository import GithubUserInfoRepository
 
 class GithubUserInfoSimpleRepository(GithubUserInfoRepository):
     async def readByAuthToken(self, authToken: GithubAuthToken) -> GithubUserInfo:
-        return JsonUserInfoDecoder.from_json(await provider["user-info-api"].readUserInfo(authToken.accessToken))
+        return JsonUserInfoDecoder.from_json(await provider["user-info-source"].readUserInfo(authToken.accessToken))

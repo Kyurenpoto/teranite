@@ -44,9 +44,9 @@ provider.wire(
         "auth-token-repo": GithubAuthTokenSimpleRepository,
         "user-info-repo": GithubUserInfoSimpleRepository,
         "user-repo": GithubUserSimpleRepository,
-        "auth-token-api": GithubAuthTokenAPIDataSource,
-        "user-info-api": GithubUserInfoAPIDataSource,
-        "user-db": GithubUserDBDataSource,
+        "auth-token-source": GithubAuthTokenAPIDataSource,
+        "user-info-source": GithubUserInfoAPIDataSource,
+        "user-source": GithubUserDBDataSource,
     }
 )
 
