@@ -1,12 +1,12 @@
 from abc import abstractmethod
 
 import pytest
+from dependency import provider
 from entity.auth_token import GithubAuthToken
 from entity.github_temporary_code import GithubTemporaryCode
 from entity.github_user import GithubUser
 from entity.github_user_info import GithubUserInfo
 from hypothesis import given, strategies
-from dependency import provider
 from repository.github_authtoken_repository import GithubAuthTokenRepository
 from repository.github_user_repository import GithubUserRepository
 from repository.github_userinfo_repository import GithubUserInfoRepository
@@ -18,7 +18,7 @@ class FakeGithubAuthTokenRepository(GithubAuthTokenRepository):
     def __init__(self):
         self.exec = []
 
-    async def findByTemporaryCode(self, code: GithubTemporaryCode) -> GithubAuthToken:
+    async def readByTemporaryCode(self, code: GithubTemporaryCode) -> GithubAuthToken:
         self.exec += [f"findByTemporaryCode: {code}"]
 
         return GithubAuthToken("access_token", "refresh_token")
@@ -58,7 +58,7 @@ class FakeGithubUserInfoRepository(GithubUserInfoRepository):
     def __init__(self):
         self.exec = []
 
-    async def findByAuthToken(self, authToken: GithubAuthToken) -> GithubUserInfo:
+    async def readByAuthToken(self, authToken: GithubAuthToken) -> GithubUserInfo:
         self.exec += [f"findByAuthToken: {authToken}"]
 
         return GithubUserInfo("heal9179@gmail.com")

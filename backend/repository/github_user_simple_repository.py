@@ -2,16 +2,20 @@ from dependency import provider
 from entity.auth_token import GithubAuthToken
 from entity.github_user import GithubUser
 from repository.github_user_repository import GithubUserRepository
+from datasource.github_user_datasource import GithubUserDataSource
 
 class GithubUserSimpleRepository(GithubUserRepository):
+    def __init__(self):
+        self.datasource: GithubUserDataSource = provider["user-source"]
+    
     async def readByEmail(self, email: str) -> GithubUser | None:
-        match await provider["user-source"].readUser(email):
+        match await self.datasource.readUser(email):
             case {"email": email, "githubAccessToken": accessToken, "githubRefreshToken": refreshToken}:
                 return GithubUser(email, GithubAuthToken(accessToken, refreshToken))
         return None
 
     async def create(self, user: GithubUser):
-        return await provider["user-source"].createUser(user.email, user.authToken.accessToken, user.authToken.refreshToken)
+        return await self.datasource.createUser(user.email, user.authToken.accessToken, user.authToken.refreshToken)
 
     async def updateAuthToken(self, email: str, authToken: GithubAuthToken):
-        return await provider["user-source"].updateUser(email, authToken.accessToken, authToken.refreshToken)
+        return await self.datasource.updateUser(email, authToken.accessToken, authToken.refreshToken)
