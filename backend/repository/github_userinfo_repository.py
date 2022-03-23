@@ -6,5 +6,5 @@ from entity.github_user_info import GithubUserInfo
 
 class GithubUserInfoRepository(ABC):
     @abstractmethod
-    async def findByAuthToken(self, authToken: GithubAuthToken) -> GithubUserInfo:
+    async def readByAuthToken(self, authToken: GithubAuthToken) -> GithubUserInfo:
         pass

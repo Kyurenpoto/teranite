@@ -6,5 +6,5 @@ from entity.github_temporary_code import GithubTemporaryCode
 
 class GithubAuthTokenRepository(ABC):
     @abstractmethod
-    async def findByTemporaryCode(self, code: GithubTemporaryCode) -> GithubAuthToken:
+    async def readByTemporaryCode(self, code: GithubTemporaryCode) -> GithubAuthToken:
         pass

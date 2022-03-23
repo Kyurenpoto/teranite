@@ -13,7 +13,7 @@ class GithubIssueToken:
         self.repository: GithubAuthTokenRepository = provider["auth-token-repo"]
     
     async def issue(self, code: GithubTemporaryCode) -> GithubAuthToken:
-        return await self.repository.findByTemporaryCode(code)
+        return await self.repository.readByTemporaryCode(code)
 
 
 class GithubAccessUserInfo:
@@ -21,7 +21,7 @@ class GithubAccessUserInfo:
         self.repository: GithubUserInfoRepository = provider["user-info-repo"]
     
     async def access(self, authToken: GithubAuthToken) -> GithubUserInfo:
-        return await self.repository.findByAuthToken(authToken)
+        return await self.repository.readByAuthToken(authToken)
 
 
 class GithubUserExistance:

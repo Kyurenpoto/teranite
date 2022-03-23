@@ -9,5 +9,5 @@ class GithubAuthTokenSimpleRepository(GithubAuthTokenRepository):
     def __init__(self):
         self.datasource = provider["auth-token-api"]
 
-    async def findByTemporaryCode(self, code: GithubTemporaryCode) -> GithubAuthToken:
+    async def readByTemporaryCode(self, code: GithubTemporaryCode) -> GithubAuthToken:
         return JsonAuthTokenDecoder.from_json(await provider["auth-token-api"].createAuthToken(str(code)))
