@@ -8,19 +8,49 @@ from repository.github_authtoken_simple_repository import GithubAuthTokenSimpleR
 
 
 class FakeGithubAuthTokenDataSource(GithubAuthTokenDataSource):
+    def __init__(self):
+        self.accounts: dict[str, dict] = {}
+
     async def createAuthToken(self, code: str) -> dict:
-        return {"access_token": "heal9179@gmail.com", "refresh_token": "heal9179@gmail.com"}
+        self.accounts["email"] = {
+            "email": "email",
+            "access_token": f"access_token@{code}",
+            "refresh_token": f"refresh_token@{code}",
+        }
+        return {
+            "access_token": self.accounts["email"]["access_token"],
+            "refresh_token": self.accounts["email"]["refresh_token"],
+        }
 
 
 @pytest.mark.asyncio
 @given(strategies.characters())
-async def test_readByTemporaryCode(code: str):
+async def test_readByTemporaryCode_issued(code: str):
     provider.wire(
         {
             "auth-token-source": FakeGithubAuthTokenDataSource,
         }
     )
 
+    accounts = {
+        "email": {
+            "email": "email",
+            "access_token": f"accesstoken@{code}",
+            "refresh_token": f"refreshtoken@{code}",
+        }
+    }
+
+    tokenSource: FakeGithubAuthTokenDataSource = provider["auth-token-source"]
+    tokenSource.accounts = {**accounts}
+
     result = await GithubAuthTokenSimpleRepository().readByTemporaryCode(GithubTemporaryCode(code))
 
-    assert result.accessToken == "heal9179@gmail.com" and result.refreshToken == "heal9179@gmail.com"
+    assert result.accessToken == f"access_token@{code}" and result.refreshToken == f"refresh_token@{code}"
+
+    assert len(tokenSource.accounts) == len(accounts)
+
+    email = list(filter(lambda x: x[1]["access_token"] == f"access_token@{code}", tokenSource.accounts.items()))[0][0]
+    assert list(filter(lambda x: x[0] == email, tokenSource.accounts.items()))[0][0] == email
+    assert dict(filter(lambda x: x[0] != email, tokenSource.accounts.items())) == dict(
+        filter(lambda x: x[0] != email, accounts.items())
+    )

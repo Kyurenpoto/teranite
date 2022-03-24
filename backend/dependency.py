@@ -35,8 +35,9 @@ class Provider(NamedTuple):
         return self.instances.__dict__[name]
 
     def wire(self, container: dict):
+        self.unwire()
+
         self.types.__dict__ = container
-        self.instances.__dict__ = {}
 
     def unwire(self):
         self.types.__dict__ = {}

@@ -8,8 +8,12 @@ from repository.github_userinfo_simple_repository import GithubUserInfoSimpleRep
 
 
 class FakeGithubUserInfoDataSource(GithubUserInfoDataSource):
+    def __init__(self):
+        self.userInfos: dict[str, dict] = {}
+        self.tokens: dict[str, str] = {}
+
     async def readUserInfo(self, accessToken: str) -> dict:
-        return {"email": "heal9179@gmail.com"}
+        return self.userInfos[self.tokens[accessToken]]
 
 
 @pytest.mark.asyncio
@@ -21,6 +25,13 @@ async def test_readByAuthToken(accessToken: str, refreshToken: str):
         }
     )
 
+    userInfos = {"email": {"email": "email"}}
+    userInfoSource: FakeGithubUserInfoDataSource = provider["user-info-source"]
+    userInfoSource.userInfos = {**userInfos}
+    userInfoSource.tokens = {accessToken: "email"}
+
     result = await GithubUserInfoSimpleRepository().readByAuthToken(GithubAuthToken(accessToken, refreshToken))
 
-    assert result.email == "heal9179@gmail.com"
+    assert result.email == "email"
+
+    assert userInfoSource.userInfos == userInfos
