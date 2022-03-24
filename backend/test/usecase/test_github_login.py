@@ -1,5 +1,3 @@
-from abc import abstractmethod
-
 import pytest
 from dependency import provider
 from entity.auth_token import GithubAuthToken
@@ -15,58 +13,32 @@ from usecase.github_login import GithubLoginWithoutToken
 
 
 class FakeGithubAuthTokenRepository(GithubAuthTokenRepository):
-    def __init__(self):
-        self.exec = []
-
     async def readByTemporaryCode(self, code: GithubTemporaryCode) -> GithubAuthToken:
-        self.exec += [f"findByTemporaryCode: {code}"]
-
-        return GithubAuthToken("access_token", "refresh_token")
+        return GithubAuthToken(f"access_token@{code}", f"refresh_token@{code}")
 
 
-class FakeGithubUserRepositoryBase(GithubUserRepository):
+class FakeGithubUserRepository(GithubUserRepository):
     def __init__(self):
-        self.exec = []
+        self.users: dict[str, GithubUser] = {}
 
     async def readByEmail(self, email: str) -> GithubUser | None:
-        self.exec += [f"readByEmail: {email}"]
-
-        return await self.fake(email)
+        return self.users[email] if email in self.users else None
 
     async def create(self, user: GithubUser):
-        self.exec += [f"create: {user}"]
+        self.users[user.email] = user
 
     async def updateAuthToken(self, email: str, authToken: GithubAuthToken):
-        self.exec += [f"updateAuthToken: {email}, {authToken}"]
-
-    @abstractmethod
-    async def fake(self, email: str) -> GithubUser | None:
-        pass
-
-
-class FakeGithubUserRepository(FakeGithubUserRepositoryBase):
-    async def fake(self, email: str) -> GithubUser | None:
-        return GithubUser(email, GithubAuthToken("access_token", "refresh_token"))
-
-
-class FakeNoneGithubUserRepository(FakeGithubUserRepositoryBase):
-    async def fake(self, email: str) -> GithubUser | None:
-        return None
+        self.users[email] = GithubUser(email, authToken)
 
 
 class FakeGithubUserInfoRepository(GithubUserInfoRepository):
-    def __init__(self):
-        self.exec = []
-
     async def readByAuthToken(self, authToken: GithubAuthToken) -> GithubUserInfo:
-        self.exec += [f"findByAuthToken: {authToken}"]
-
-        return GithubUserInfo("heal9179@gmail.com")
+        return GithubUserInfo(f"email@{authToken.accessToken}")
 
 
 @pytest.mark.asyncio
 @given(strategies.characters())
-async def test_login(code: str):
+async def test_login_old_user(code: str):
     provider.wire(
         {
             "auth-token-repo": FakeGithubAuthTokenRepository,
@@ -75,6 +47,41 @@ async def test_login(code: str):
         }
     )
 
+    users = {
+        f"email@access_token@{code}": GithubUser(
+            f"email@access_token@{code}", GithubAuthToken(f"access_token@{code}", f"refresh_token@{code}")
+        )
+    }
+
+    userRepo: FakeGithubUserRepository = provider["user-repo"]
+    userRepo.users = {**users}
+
     result = await GithubLoginWithoutToken().login(GithubTemporaryCode(code))
 
-    assert result.accessToken == "heal9179@gmail.com" and result.refreshToken == "heal9179@gmail.com"
+    assert result.accessToken == f"email@access_token@{code}" and result.refreshToken == f"email@access_token@{code}"
+
+    assert userRepo.users == users
+
+
+@pytest.mark.asyncio
+@given(strategies.characters())
+async def test_login_new_user(code: str):
+    provider.wire(
+        {
+            "auth-token-repo": FakeGithubAuthTokenRepository,
+            "user-info-repo": FakeGithubUserInfoRepository,
+            "user-repo": FakeGithubUserRepository,
+        }
+    )
+
+    users = {}
+
+    userRepo: FakeGithubUserRepository = provider["user-repo"]
+    userRepo.users = {**users}
+
+    result = await GithubLoginWithoutToken().login(GithubTemporaryCode(code))
+
+    assert result.accessToken == f"email@access_token@{code}" and result.refreshToken == f"email@access_token@{code}"
+
+    assert len(userRepo.users) == len(users) + 1
+    assert dict(filter(lambda x: x[0] in userRepo.users, users.items())) == users

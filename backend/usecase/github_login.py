@@ -58,12 +58,10 @@ class GithubLoginWithoutToken:
         userInfo = await GithubAccessUserInfo().access(authToken)
 
         if (await GithubUserExistance().exist(userInfo)):
-            print("update")
             await GithubUpdateUserAuthToken().update(userInfo, authToken)
 
             return UserAuthToken(userInfo.email, userInfo.email)
         else:
-            print("create")
             await GithubCreateUser().create(userInfo, authToken)
 
             return UserAuthToken(userInfo.email, userInfo.email)
