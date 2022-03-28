@@ -1,11 +1,9 @@
 from abc import ABC, abstractmethod
 
-from database import models
-
 
 class GithubUserDataSource(ABC):
     @abstractmethod
-    async def readUser(self, email: str) -> models.User | None:
+    async def readUser(self, email: str) -> dict | None:
         pass
 
     @abstractmethod
