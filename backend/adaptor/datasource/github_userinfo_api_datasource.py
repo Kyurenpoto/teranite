@@ -1,5 +1,5 @@
+from adaptor.datasource.github_userinfo_datasource import GithubUserInfoDataSource
 from httpx import AsyncClient
-from datasource.github_userinfo_datasource import GithubUserInfoDataSource
 
 
 class GithubUserInfoAPIDataSource(GithubUserInfoDataSource):

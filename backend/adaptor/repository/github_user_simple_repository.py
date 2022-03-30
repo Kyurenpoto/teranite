@@ -1,8 +1,9 @@
+from adaptor.datasource.github_user_datasource import GithubUserDataSource
+from adaptor.repository.github_user_repository import GithubUserRepository
 from dependency import provider
 from entity.auth_token import GithubAuthToken
 from entity.github_user import GithubUser
-from repository.github_user_repository import GithubUserRepository
-from datasource.github_user_datasource import GithubUserDataSource
+
 
 class GithubUserSimpleRepository(GithubUserRepository):
     def __init__(self):

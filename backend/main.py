@@ -1,4 +1,4 @@
-from database import Base, DB, engine
+from database import DB, Base, engine
 
 Base.metadata.create_all(bind=engine)
 
@@ -23,13 +23,13 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-from datasource.github_authtoken_api_datasource import GithubAuthTokenAPIDataSource
-from datasource.github_user_db_datasource import GithubUserDBDataSource
-from datasource.github_userinfo_api_datasource import GithubUserInfoAPIDataSource
+from adaptor.datasource.github_authtoken_api_datasource import GithubAuthTokenAPIDataSource
+from adaptor.datasource.github_user_db_datasource import GithubUserDBDataSource
+from adaptor.datasource.github_userinfo_api_datasource import GithubUserInfoAPIDataSource
+from adaptor.repository.github_authtoken_simple_repository import GithubAuthTokenSimpleRepository
+from adaptor.repository.github_user_simple_repository import GithubUserSimpleRepository
+from adaptor.repository.github_userinfo_simple_repository import GithubUserInfoSimpleRepository
 from dependency import TypeValue, provider
-from repository.github_authtoken_simple_repository import GithubAuthTokenSimpleRepository
-from repository.github_user_simple_repository import GithubUserSimpleRepository
-from repository.github_userinfo_simple_repository import GithubUserInfoSimpleRepository
 
 provider.wire(
     {

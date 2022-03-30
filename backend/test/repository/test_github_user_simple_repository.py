@@ -1,11 +1,11 @@
 import pytest
-from datasource.github_user_datasource import GithubUserDataSource
+from adaptor.datasource.github_user_datasource import GithubUserDataSource
 from dependency import provider
 from entity.auth_token import GithubAuthToken
 from entity.github_user import GithubUser
 from hypothesis import given, strategies
 
-from repository.github_user_simple_repository import GithubUserSimpleRepository
+from adaptor.repository.github_user_simple_repository import GithubUserSimpleRepository
 
 
 class FakeGithubUserDataSource(GithubUserDataSource):

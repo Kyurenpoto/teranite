@@ -1,9 +1,9 @@
+from adaptor.datasource.github_userinfo_datasource import GithubUserInfoDataSource
 from adaptor.from_json_decoder import JsonUserInfoDecoder
+from adaptor.repository.github_userinfo_repository import GithubUserInfoRepository
 from dependency import provider
 from entity.auth_token import GithubAuthToken
 from entity.github_user_info import GithubUserInfo
-from repository.github_userinfo_repository import GithubUserInfoRepository
-from datasource.github_userinfo_datasource import GithubUserInfoDataSource
 
 
 class GithubUserInfoSimpleRepository(GithubUserInfoRepository):

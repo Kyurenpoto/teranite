@@ -1,8 +1,7 @@
+from adaptor.datasource.github_user_datasource import GithubUserDataSource
 from database import Base
 from dependency import provider
 from sqlalchemy import Column, String
-
-from datasource.github_user_datasource import GithubUserDataSource
 
 
 class UserTable(Base):

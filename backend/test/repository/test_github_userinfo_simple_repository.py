@@ -1,10 +1,9 @@
 import pytest
-from datasource.github_userinfo_datasource import GithubUserInfoDataSource
+from adaptor.datasource.github_userinfo_datasource import GithubUserInfoDataSource
+from adaptor.repository.github_userinfo_simple_repository import GithubUserInfoSimpleRepository
 from dependency import provider
 from entity.auth_token import GithubAuthToken
 from hypothesis import given, strategies
-
-from repository.github_userinfo_simple_repository import GithubUserInfoSimpleRepository
 
 
 class FakeGithubUserInfoDataSource(GithubUserInfoDataSource):

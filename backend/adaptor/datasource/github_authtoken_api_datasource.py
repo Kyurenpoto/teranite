@@ -1,6 +1,6 @@
-from httpx import AsyncClient
+from adaptor.datasource.github_authtoken_datasource import GithubAuthTokenDataSource
 from dependency import provider
-from datasource.github_authtoken_datasource import GithubAuthTokenDataSource
+from httpx import AsyncClient
 
 
 class GithubAuthTokenAPIDataSource(GithubAuthTokenDataSource):
