@@ -7,6 +7,8 @@ from repository.github_authtoken_repository import GithubAuthTokenRepository
 from repository.github_user_repository import GithubUserRepository
 from repository.github_userinfo_repository import GithubUserInfoRepository
 
+from usecase.github_login_port import GithubLoginWithoutTokenInputPort
+
 
 class GithubIssueToken:
     def __init__(self):
@@ -52,7 +54,7 @@ class GithubUpdateUserAuthToken:
         await self.repository.updateAuthToken(email=userInfo.email, authToken=authToken)
 
 
-class GithubLoginWithoutToken:
+class GithubLoginWithoutToken(GithubLoginWithoutTokenInputPort):
     async def login(self, code: GithubTemporaryCode) -> UserAuthToken:
         authToken = await GithubIssueToken().issue(code)
         userInfo = await GithubAccessUserInfo().access(authToken)

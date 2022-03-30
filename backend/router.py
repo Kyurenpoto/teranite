@@ -2,8 +2,8 @@ from enum import Enum, auto
 from functools import reduce
 from typing import NamedTuple
 
-from fastapi import APIRouter, Request, status
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi import APIRouter, Request
+from fastapi.responses import FileResponse
 
 
 class PathType(Enum):
@@ -75,28 +75,10 @@ async def static(request: Request):
     return FileResponse(f"static{request.url.path}")
 
 
-from pydantic import BaseModel
-
-from adaptor.to_json_encoder import TokenJsonEncoder
-from entity.github_temporary_code import GithubTemporaryCode
-from usecase.github_login import GithubLoginWithoutToken
-
-
-class TemporaryCode(BaseModel):
-    code: str
+from adaptor.temporary_code import TemporaryCode
+from adaptor.concrete_token_viewmodel import TokenViewModelImpl
 
 
 @router.post("/token/{sns_type:path}")
 async def token(code: TemporaryCode, sns_type: str):
-    try:
-        if sns_type == "github":
-            return JSONResponse(
-                status_code=status.HTTP_200_OK,
-                content=TokenJsonEncoder.from_token(
-                    (await GithubLoginWithoutToken().login(GithubTemporaryCode(code.code)))
-                ),
-            )
-
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND)
-    except RuntimeError as e:
-        print(e)
+    return await TokenViewModelImpl().update(code, sns_type)
