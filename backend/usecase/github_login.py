@@ -55,15 +55,13 @@ class GithubUpdateUserAuthToken:
 
 
 class GithubLoginWithoutToken(GithubLoginWithoutTokenInputPort):
-    async def login(self, code: GithubTemporaryCode) -> UserAuthToken:
+    async def login(self, code: GithubTemporaryCode):
         authToken = await GithubIssueToken().issue(code)
         userInfo = await GithubAccessUserInfo().access(authToken)
 
         if (await GithubUserExistance().exist(userInfo)):
             await GithubUpdateUserAuthToken().update(userInfo, authToken)
-
-            return UserAuthToken(userInfo.email, userInfo.email)
         else:
             await GithubCreateUser().create(userInfo, authToken)
 
-            return UserAuthToken(userInfo.email, userInfo.email)
+        await self.outputPort.present(UserAuthToken(userInfo.email, userInfo.email))

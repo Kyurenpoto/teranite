@@ -16,5 +16,8 @@ class TokenPresenter(GithubLoginWithoutTokenOutputPort):
             status_code=status.HTTP_200_OK, content=TokenJsonEncoder.from_token((authToken))
         )
 
-    async def presentInvalid(self):
+    async def presentInvalidSnsType(self):
         self.viewModel.response = JSONResponse(status_code=status.HTTP_404_NOT_FOUND)
+
+    async def presentUnknown(self):
+        self.viewModel.response = JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

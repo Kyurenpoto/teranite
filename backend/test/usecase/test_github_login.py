@@ -3,13 +3,14 @@ from adaptor.repository.github_authtoken_repository import GithubAuthTokenReposi
 from adaptor.repository.github_user_repository import GithubUserRepository
 from adaptor.repository.github_userinfo_repository import GithubUserInfoRepository
 from dependency import provider
-from entity.auth_token import GithubAuthToken
+from entity.auth_token import GithubAuthToken, UserAuthToken
 from entity.github_temporary_code import GithubTemporaryCode
 from entity.github_user import GithubUser
 from entity.github_user_info import GithubUserInfo
 from hypothesis import given, strategies
 
 from usecase.github_login import GithubLoginWithoutToken
+from usecase.github_login_port import GithubLoginWithoutTokenOutputPort
 
 
 class FakeGithubAuthTokenRepository(GithubAuthTokenRepository):
@@ -36,6 +37,11 @@ class FakeGithubUserInfoRepository(GithubUserInfoRepository):
         return GithubUserInfo(f"email@{authToken.accessToken}")
 
 
+class FakePresenter(GithubLoginWithoutTokenOutputPort):
+    async def present(self, authToken: UserAuthToken):
+        self.authToken = authToken
+
+
 @pytest.mark.asyncio
 @given(strategies.characters())
 async def test_login_old_user(code: str):
@@ -56,9 +62,13 @@ async def test_login_old_user(code: str):
     userRepo: FakeGithubUserRepository = provider["user-repo"]
     userRepo.users = {**users}
 
-    result = await GithubLoginWithoutToken().login(GithubTemporaryCode(code))
+    presenter = FakePresenter()
+    await GithubLoginWithoutToken(presenter).login(GithubTemporaryCode(code))
 
-    assert result.accessToken == f"email@access_token@{code}" and result.refreshToken == f"email@access_token@{code}"
+    assert (
+        presenter.authToken.accessToken == f"email@access_token@{code}"
+        and presenter.authToken.refreshToken == f"email@access_token@{code}"
+    )
 
     assert userRepo.users == users
 
@@ -79,9 +89,13 @@ async def test_login_new_user(code: str):
     userRepo: FakeGithubUserRepository = provider["user-repo"]
     userRepo.users = {**users}
 
-    result = await GithubLoginWithoutToken().login(GithubTemporaryCode(code))
+    presenter = FakePresenter()
+    await GithubLoginWithoutToken(presenter).login(GithubTemporaryCode(code))
 
-    assert result.accessToken == f"email@access_token@{code}" and result.refreshToken == f"email@access_token@{code}"
+    assert (
+        presenter.authToken.accessToken == f"email@access_token@{code}"
+        and presenter.authToken.refreshToken == f"email@access_token@{code}"
+    )
 
     assert len(userRepo.users) == len(users) + 1
     assert dict(filter(lambda x: x[0] in userRepo.users, users.items())) == users
