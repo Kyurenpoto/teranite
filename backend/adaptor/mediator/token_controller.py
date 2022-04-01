@@ -1,9 +1,8 @@
+from adaptor.mediator.temporary_code import TemporaryCode
+from adaptor.mediator.token_presenter import TokenPresenter
+from adaptor.mediator.token_viewmodel import TokenViewModel
 from entity.github_temporary_code import GithubTemporaryCode
 from usecase.github_login import GithubLoginWithoutToken
-
-from adaptor.temporary_code import TemporaryCode
-from adaptor.token_presenter import TokenPresenter
-from adaptor.token_viewmodel import TokenViewModel
 
 
 class TokenController:

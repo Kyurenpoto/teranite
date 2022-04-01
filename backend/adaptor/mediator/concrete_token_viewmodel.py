@@ -1,8 +1,7 @@
+from adaptor.mediator.temporary_code import TemporaryCode
+from adaptor.mediator.token_controller import TokenController
+from adaptor.mediator.token_viewmodel import TokenViewModel
 from fastapi.responses import JSONResponse
-
-from adaptor.temporary_code import TemporaryCode
-from adaptor.token_viewmodel import TokenViewModel
-from adaptor.token_controller import TokenController
 
 
 class TokenViewModelImpl(TokenViewModel):

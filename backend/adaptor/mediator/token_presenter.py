@@ -1,10 +1,9 @@
+from adaptor.mediator.token_viewmodel import TokenViewModel
+from adaptor.to_json_encoder import TokenJsonEncoder
 from entity.auth_token import UserAuthToken
 from fastapi import status
 from fastapi.responses import JSONResponse
 from usecase.github_login_port import GithubLoginWithoutTokenOutputPort
-
-from adaptor.to_json_encoder import TokenJsonEncoder
-from adaptor.token_viewmodel import TokenViewModel
 
 
 class TokenPresenter(GithubLoginWithoutTokenOutputPort):

@@ -75,8 +75,8 @@ async def static(request: Request):
     return FileResponse(f"static{request.url.path}")
 
 
-from adaptor.temporary_code import TemporaryCode
-from adaptor.concrete_token_viewmodel import TokenViewModelImpl
+from adaptor.mediator.temporary_code import TemporaryCode
+from adaptor.mediator.concrete_token_viewmodel import TokenViewModelImpl
 
 
 @router.post("/token/{sns_type:path}")
