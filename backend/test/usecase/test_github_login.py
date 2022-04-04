@@ -2,7 +2,7 @@ import pytest
 from adaptor.repository.github_authtoken_repository import GithubAuthTokenRepository
 from adaptor.repository.github_user_repository import GithubUserRepository
 from adaptor.repository.github_userinfo_repository import GithubUserInfoRepository
-from dependency import provider
+from dependencies.dependency import provider
 from entity.auth_token import GithubAuthToken, UserAuthToken
 from entity.github_temporary_code import GithubTemporaryCode
 from entity.github_user import GithubUser

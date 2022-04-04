@@ -29,7 +29,7 @@ from adaptor.datasource.github_userinfo_api_datasource import GithubUserInfoAPID
 from adaptor.repository.github_authtoken_simple_repository import GithubAuthTokenSimpleRepository
 from adaptor.repository.github_user_simple_repository import GithubUserSimpleRepository
 from adaptor.repository.github_userinfo_simple_repository import GithubUserInfoSimpleRepository
-from dependency import TypeValue, provider
+from dependencies.dependency import TypeValue, provider
 
 provider.wire(
     {
