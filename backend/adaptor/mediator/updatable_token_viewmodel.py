@@ -4,7 +4,7 @@ from adaptor.mediator.token_viewmodel import TokenViewModel
 from fastapi.responses import JSONResponse
 
 
-class TokenViewModelImpl(TokenViewModel):
+class UpdatableTokenViewModel(TokenViewModel):
     def __init__(self):
         self.controller = TokenController(self)
 

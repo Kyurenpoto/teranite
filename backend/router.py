@@ -76,9 +76,9 @@ async def static(request: Request):
 
 
 from adaptor.mediator.temporary_code import TemporaryCode
-from adaptor.mediator.concrete_token_viewmodel import TokenViewModelImpl
+from adaptor.mediator.updatable_token_viewmodel import UpdatableTokenViewModel
 
 
 @router.post("/token/{sns_type:path}")
 async def token(code: TemporaryCode, sns_type: str):
-    return await TokenViewModelImpl().update(code, sns_type)
+    return await UpdatableTokenViewModel().update(code, sns_type)

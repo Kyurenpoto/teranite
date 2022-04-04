@@ -1,6 +1,6 @@
 from adaptor.datasource.github_user_datasource import GithubUserDataSource
 from database import Base
-from dependency import provider
+from dependencies.dependency import provider
 from sqlalchemy import Column, String
 
 
@@ -13,8 +13,11 @@ class UserTable(Base):
 
 
 class GithubUserDBDataSource(GithubUserDataSource):
+    def __init__(self):
+        self.db = provider["db"].db
+    
     async def readUser(self, email: str) -> dict | None:
-        match provider["db"].db.query(UserTable).filter(UserTable.email == email).first():
+        match self.db.query(UserTable).filter(UserTable.email == email).first():
             case UserTable(email=userEmail, github_access_token=accessToken, github_refresh_token=refreshToken):
                 return {
                     "email": str(userEmail),
@@ -31,14 +34,12 @@ class GithubUserDBDataSource(GithubUserDataSource):
             github_refresh_token=refreshToken,
         )
         
-        db = provider["db"].db
-        db.add(db_user)
-        db.commit()
-        db.refresh(db_user)
+        self.db.add(db_user)
+        self.db.commit()
+        self.db.refresh(db_user)
 
     async def updateUser(self, email: str, accessToken: str, refreshToken: str):
-        db = provider["db"].db
-        db.query(UserTable).filter(UserTable.email == email).update(
+        self.db.query(UserTable).filter(UserTable.email == email).update(
             {"github_access_token": accessToken, "github_refresh_token": refreshToken}
         )
-        db.commit()
+        self.db.commit()

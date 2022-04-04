@@ -1,5 +1,4 @@
 from adaptor.mediator.token_viewmodel import TokenViewModel
-from adaptor.to_json_encoder import TokenJsonEncoder
 from entity.auth_token import UserAuthToken
 from fastapi import status
 from fastapi.responses import JSONResponse
@@ -12,7 +11,12 @@ class TokenPresenter(GithubLoginWithoutTokenOutputPort):
 
     async def present(self, authToken: UserAuthToken):
         self.viewModel.response = JSONResponse(
-            status_code=status.HTTP_200_OK, content=TokenJsonEncoder.from_token((authToken))
+            status_code=status.HTTP_200_OK,
+            content={
+                "has_account": True,
+                "access_token": str([authToken.accessToken]),
+                "refresh_token": str([authToken.refreshToken]),
+            },
         )
 
     async def presentInvalidSnsType(self):
