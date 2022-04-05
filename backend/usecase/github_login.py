@@ -12,7 +12,7 @@ from usecase.github_login_port import GithubLoginWithoutTokenInputPort
 
 class GithubIssueToken:
     def __init__(self):
-        self.repository: GithubAuthTokenRepository = provider["auth-token-repo"]
+        self.repository: GithubAuthTokenRepository = provider["auth"]["auth-token-repo"]
     
     async def issue(self, code: GithubTemporaryCode) -> GithubAuthToken:
         return await self.repository.readByTemporaryCode(code)
@@ -20,7 +20,7 @@ class GithubIssueToken:
 
 class GithubAccessUserInfo:
     def __init__(self):
-        self.repository: GithubUserInfoRepository = provider["user-info-repo"]
+        self.repository: GithubUserInfoRepository = provider["auth"]["user-info-repo"]
     
     async def access(self, authToken: GithubAuthToken) -> GithubUserInfo:
         return await self.repository.readByAuthToken(authToken)
@@ -28,7 +28,7 @@ class GithubAccessUserInfo:
 
 class GithubUserExistance:
     def __init__(self):
-        self.repository: GithubUserRepository = provider["user-repo"]
+        self.repository: GithubUserRepository = provider["auth"]["user-repo"]
     
     async def exist(self, userInfo: GithubUserInfo) -> bool:
         match await self.repository.readByEmail(userInfo.email):
@@ -40,7 +40,7 @@ class GithubUserExistance:
 
 class GithubCreateUser:
     def __init__(self):
-        self.repository: GithubUserRepository = provider["user-repo"]
+        self.repository: GithubUserRepository = provider["auth"]["user-repo"]
         
     async def create(self, userInfo: GithubUserInfo, authToken: GithubAuthToken):
         await self.repository.create(GithubUser(email=userInfo.email, authToken=authToken))
@@ -48,7 +48,7 @@ class GithubCreateUser:
 
 class GithubUpdateUserAuthToken:
     def __init__(self):
-        self.repository: GithubUserRepository = provider["user-repo"]
+        self.repository: GithubUserRepository = provider["auth"]["user-repo"]
         
     async def update(self, userInfo: GithubUserInfo, authToken: GithubAuthToken):
         await self.repository.updateAuthToken(email=userInfo.email, authToken=authToken)

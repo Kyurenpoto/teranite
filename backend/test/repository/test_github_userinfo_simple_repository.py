@@ -1,6 +1,7 @@
 import pytest
 from adaptor.datasource.github_userinfo_datasource import GithubUserInfoDataSource
 from adaptor.repository.github_userinfo_simple_repository import GithubUserInfoSimpleRepository
+from dependencies.auth_container import AuthContainer
 from dependencies.dependency import provider
 from entity.auth_token import GithubAuthToken
 from hypothesis import given, strategies
@@ -18,14 +19,10 @@ class FakeGithubUserInfoDataSource(GithubUserInfoDataSource):
 @pytest.mark.asyncio
 @given(strategies.characters(), strategies.characters())
 async def test_readByAuthToken(accessToken: str, refreshToken: str):
-    provider.wire(
-        {
-            "user-info-source": FakeGithubUserInfoDataSource,
-        }
-    )
+    provider.wire({"auth": AuthContainer({"user-info-source": FakeGithubUserInfoDataSource})})
 
     userInfos = {"email": {"email": "email"}}
-    userInfoSource: FakeGithubUserInfoDataSource = provider["user-info-source"]
+    userInfoSource: FakeGithubUserInfoDataSource = provider["auth"]["user-info-source"]
     userInfoSource.userInfos = {**userInfos}
     userInfoSource.tokens = {accessToken: "email"}
 

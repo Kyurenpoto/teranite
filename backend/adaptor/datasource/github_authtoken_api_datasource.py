@@ -5,7 +5,7 @@ from httpx import AsyncClient
 
 class GithubAuthTokenAPIDataSource(GithubAuthTokenDataSource):
     def __init__(self):
-        self.config = provider["github-config"]
+        self.config = provider["auth"]["github-config"]
 
     async def createAuthToken(self, code: str) -> dict:
         async with AsyncClient() as client:

@@ -23,31 +23,10 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-from adaptor.datasource.github_authtoken_api_datasource import GithubAuthTokenAPIDataSource
-from adaptor.datasource.github_user_db_datasource import GithubUserDBDataSource
-from adaptor.datasource.github_userinfo_api_datasource import GithubUserInfoAPIDataSource
-from adaptor.repository.github_authtoken_simple_repository import GithubAuthTokenSimpleRepository
-from adaptor.repository.github_user_simple_repository import GithubUserSimpleRepository
-from adaptor.repository.github_userinfo_simple_repository import GithubUserInfoSimpleRepository
-from dependencies.dependency import TypeValue, provider
+from dependencies.dependency import provider
+from dependencies.auth_container import AuthContainer
 
-provider.wire(
-    {
-        "github-config": TypeValue(
-            {
-                "client-id": "",
-                "client-secret": "",
-            },
-        ),
-        "db": DB,
-        "auth-token-repo": GithubAuthTokenSimpleRepository,
-        "user-info-repo": GithubUserInfoSimpleRepository,
-        "user-repo": GithubUserSimpleRepository,
-        "auth-token-source": GithubAuthTokenAPIDataSource,
-        "user-info-source": GithubUserInfoAPIDataSource,
-        "user-source": GithubUserDBDataSource,
-    }
-)
+provider.wire({"auth": AuthContainer()})
 
 import uvicorn
 

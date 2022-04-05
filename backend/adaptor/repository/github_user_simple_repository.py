@@ -7,7 +7,7 @@ from entity.github_user import GithubUser
 
 class GithubUserSimpleRepository(GithubUserRepository):
     def __init__(self):
-        self.datasource: GithubUserDataSource = provider["user-source"]
+        self.datasource: GithubUserDataSource = provider["auth"]["user-source"]
     
     async def readByEmail(self, email: str) -> GithubUser | None:
         match await self.datasource.readUser(email):

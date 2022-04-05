@@ -16,32 +16,25 @@ class TypeFactory(NamedTuple):
         return self.typeObject(**self.params)
 
 
-class TypeContainer:
-    pass
-
-
-class InstanceContainer:
-    pass
-
-
-class Provider(NamedTuple):
-    types = TypeContainer()
-    instances = InstanceContainer()
+class Provider:
+    def __init__(self):
+        self.types = [{}]
+        self.instances = [{}]
 
     def __getitem__(self, name):
-        if name not in self.instances.__dict__:
-            self.instances.__dict__[name] = self.types.__dict__[name]()
+        if name not in self.instances[0]:
+            self.instances[0][name] = self.types[0][name]()
 
-        return self.instances.__dict__[name]
+        return self.instances[0][name]
 
     def wire(self, container: dict):
         self.unwire()
 
-        self.types.__dict__ = container
+        self.types[0] = container
 
     def unwire(self):
-        self.types.__dict__ = {}
-        self.instances.__dict__ = {}
+        self.types[0] = {}
+        self.instances[0] = {}
 
 
 provider = Provider()

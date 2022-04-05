@@ -2,6 +2,7 @@ import pytest
 from adaptor.repository.github_authtoken_repository import GithubAuthTokenRepository
 from adaptor.repository.github_user_repository import GithubUserRepository
 from adaptor.repository.github_userinfo_repository import GithubUserInfoRepository
+from dependencies.auth_container import AuthContainer
 from dependencies.dependency import provider
 from entity.auth_token import GithubAuthToken, UserAuthToken
 from entity.github_temporary_code import GithubTemporaryCode
@@ -42,25 +43,36 @@ class FakePresenter(GithubLoginWithoutTokenOutputPort):
         self.authToken = authToken
 
 
+class Fixture:
+    def __init__(self, users: dict):
+        provider.wire(
+            {
+                "auth": AuthContainer(
+                    {
+                        "auth-token-repo": FakeGithubAuthTokenRepository,
+                        "user-info-repo": FakeGithubUserInfoRepository,
+                        "user-repo": FakeGithubUserRepository,
+                    }
+                )
+            }
+        )
+
+        self.users = users
+
+        self.userRepo: FakeGithubUserRepository = provider["auth"]["user-repo"]
+        self.userRepo.users = {**self.users}
+
+
 @pytest.mark.asyncio
 @given(strategies.characters())
 async def test_login_old_user(code: str):
-    provider.wire(
+    fixture = Fixture(
         {
-            "auth-token-repo": FakeGithubAuthTokenRepository,
-            "user-info-repo": FakeGithubUserInfoRepository,
-            "user-repo": FakeGithubUserRepository,
+            f"email@access_token@{code}": GithubUser(
+                f"email@access_token@{code}", GithubAuthToken(f"access_token@{code}", f"refresh_token@{code}")
+            )
         }
     )
-
-    users = {
-        f"email@access_token@{code}": GithubUser(
-            f"email@access_token@{code}", GithubAuthToken(f"access_token@{code}", f"refresh_token@{code}")
-        )
-    }
-
-    userRepo: FakeGithubUserRepository = provider["user-repo"]
-    userRepo.users = {**users}
 
     presenter = FakePresenter()
     await GithubLoginWithoutToken(presenter).login(GithubTemporaryCode(code))
@@ -70,24 +82,13 @@ async def test_login_old_user(code: str):
         and presenter.authToken.refreshToken == f"email@access_token@{code}"
     )
 
-    assert userRepo.users == users
+    assert fixture.userRepo.users == fixture.users
 
 
 @pytest.mark.asyncio
 @given(strategies.characters())
 async def test_login_new_user(code: str):
-    provider.wire(
-        {
-            "auth-token-repo": FakeGithubAuthTokenRepository,
-            "user-info-repo": FakeGithubUserInfoRepository,
-            "user-repo": FakeGithubUserRepository,
-        }
-    )
-
-    users = {}
-
-    userRepo: FakeGithubUserRepository = provider["user-repo"]
-    userRepo.users = {**users}
+    fixture = Fixture({})
 
     presenter = FakePresenter()
     await GithubLoginWithoutToken(presenter).login(GithubTemporaryCode(code))
@@ -97,5 +98,5 @@ async def test_login_new_user(code: str):
         and presenter.authToken.refreshToken == f"email@access_token@{code}"
     )
 
-    assert len(userRepo.users) == len(users) + 1
-    assert dict(filter(lambda x: x[0] in userRepo.users, users.items())) == users
+    assert len(fixture.userRepo.users) == len(fixture.users) + 1
+    assert dict(filter(lambda x: x[0] in fixture.userRepo.users, fixture.users.items())) == fixture.users

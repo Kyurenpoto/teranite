@@ -14,7 +14,7 @@ class UserTable(Base):
 
 class GithubUserDBDataSource(GithubUserDataSource):
     def __init__(self):
-        self.db = provider["db"].db
+        self.db = provider["auth"]["db"].db
     
     async def readUser(self, email: str) -> dict | None:
         match self.db.query(UserTable).filter(UserTable.email == email).first():

@@ -18,3 +18,4 @@ class TokenController:
                 await self.presenter.presentInvalidSnsType()
         except RuntimeError as e:
             print(e)
+            await self.presenter.presentUnknown()

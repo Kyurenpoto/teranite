@@ -8,7 +8,7 @@ from entity.github_user_info import GithubUserInfo
 
 class GithubUserInfoSimpleRepository(GithubUserInfoRepository):
     def __init__(self):
-        self.datasource: GithubUserInfoDataSource = provider["user-info-source"]
+        self.datasource: GithubUserInfoDataSource = provider["auth"]["user-info-source"]
 
     async def readByAuthToken(self, authToken: GithubAuthToken) -> GithubUserInfo:
         return JsonUserInfoDecoder.from_json(await self.datasource.readUserInfo(authToken.accessToken))

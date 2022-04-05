@@ -1,10 +1,10 @@
 import pytest
 from adaptor.datasource.github_authtoken_datasource import GithubAuthTokenDataSource
+from adaptor.repository.github_authtoken_simple_repository import GithubAuthTokenSimpleRepository
+from dependencies.auth_container import AuthContainer
 from dependencies.dependency import provider
 from entity.github_temporary_code import GithubTemporaryCode
 from hypothesis import given, strategies
-
-from adaptor.repository.github_authtoken_simple_repository import GithubAuthTokenSimpleRepository
 
 
 class FakeGithubAuthTokenDataSource(GithubAuthTokenDataSource):
@@ -26,11 +26,7 @@ class FakeGithubAuthTokenDataSource(GithubAuthTokenDataSource):
 @pytest.mark.asyncio
 @given(strategies.characters())
 async def test_readByTemporaryCode_issued(code: str):
-    provider.wire(
-        {
-            "auth-token-source": FakeGithubAuthTokenDataSource,
-        }
-    )
+    provider.wire({"auth": AuthContainer({"auth-token-source": FakeGithubAuthTokenDataSource})})
 
     accounts = {
         "email": {
@@ -40,7 +36,8 @@ async def test_readByTemporaryCode_issued(code: str):
         }
     }
 
-    tokenSource: FakeGithubAuthTokenDataSource = provider["auth-token-source"]
+    print(provider["auth"].types)
+    tokenSource: FakeGithubAuthTokenDataSource = provider["auth"]["auth-token-source"]
     tokenSource.accounts = {**accounts}
 
     result = await GithubAuthTokenSimpleRepository().readByTemporaryCode(GithubTemporaryCode(code))
