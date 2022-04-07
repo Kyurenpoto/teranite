@@ -52,6 +52,7 @@ class Fixture:
                         "auth-token-repo": FakeGithubAuthTokenRepository,
                         "user-info-repo": FakeGithubUserInfoRepository,
                         "user-repo": FakeGithubUserRepository,
+                        "token-presenter": FakePresenter,
                     }
                 )
             }
@@ -74,13 +75,10 @@ async def test_login_old_user(code: str):
         }
     )
 
-    presenter = FakePresenter()
-    await GithubLoginWithoutToken(presenter).login(GithubTemporaryCode(code))
+    await GithubLoginWithoutToken().login(GithubTemporaryCode(code))
+    presenter: FakePresenter = provider["auth"]["token-presenter"]
 
-    assert (
-        presenter.authToken.accessToken == f"email@access_token@{code}"
-        and presenter.authToken.refreshToken == f"email@access_token@{code}"
-    )
+    assert presenter.authToken == UserAuthToken(f"email@access_token@{code}", f"email@access_token@{code}")
 
     assert fixture.userRepo.users == fixture.users
 
@@ -90,13 +88,10 @@ async def test_login_old_user(code: str):
 async def test_login_new_user(code: str):
     fixture = Fixture({})
 
-    presenter = FakePresenter()
-    await GithubLoginWithoutToken(presenter).login(GithubTemporaryCode(code))
+    await GithubLoginWithoutToken().login(GithubTemporaryCode(code))
+    presenter: FakePresenter = provider["auth"]["token-presenter"]
 
-    assert (
-        presenter.authToken.accessToken == f"email@access_token@{code}"
-        and presenter.authToken.refreshToken == f"email@access_token@{code}"
-    )
+    assert presenter.authToken == UserAuthToken(f"email@access_token@{code}", f"email@access_token@{code}")
 
     assert len(fixture.userRepo.users) == len(fixture.users) + 1
     assert dict(filter(lambda x: x[0] in fixture.userRepo.users, fixture.users.items())) == fixture.users

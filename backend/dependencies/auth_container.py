@@ -1,12 +1,16 @@
 from adaptor.datasource.github_authtoken_api_datasource import GithubAuthTokenAPIDataSource
 from adaptor.datasource.github_user_db_datasource import GithubUserDBDataSource
 from adaptor.datasource.github_userinfo_api_datasource import GithubUserInfoAPIDataSource
+from adaptor.mediator.updatable_token_viewmodel import UpdatableTokenViewModel
+from adaptor.mediator.token_controller import TokenController
+from adaptor.mediator.token_presenter import TokenPresenter
 from adaptor.repository.github_authtoken_simple_repository import GithubAuthTokenSimpleRepository
 from adaptor.repository.github_user_simple_repository import GithubUserSimpleRepository
 from adaptor.repository.github_userinfo_simple_repository import GithubUserInfoSimpleRepository
 from database import DB
+from usecase.github_login import GithubLoginWithoutToken
 
-from dependencies.dependency import TypeValue, Provider
+from dependencies.dependency import Provider, TypeValue
 
 
 class AuthContainer:
@@ -20,12 +24,16 @@ class AuthContainer:
                 },
             ),
             "db": DB,
-            "auth-token-repo": GithubAuthTokenSimpleRepository,
-            "user-info-repo": GithubUserInfoSimpleRepository,
-            "user-repo": GithubUserSimpleRepository,
             "auth-token-source": GithubAuthTokenAPIDataSource,
             "user-info-source": GithubUserInfoAPIDataSource,
             "user-source": GithubUserDBDataSource,
+            "auth-token-repo": GithubAuthTokenSimpleRepository,
+            "user-info-repo": GithubUserInfoSimpleRepository,
+            "user-repo": GithubUserSimpleRepository,
+            "github-login-without-token": GithubLoginWithoutToken,
+            "token-viewmodel": UpdatableTokenViewModel,
+            "token-presenter": TokenPresenter,
+            "token-controller": TokenController,
         },
     ):
         self.provider = Provider()

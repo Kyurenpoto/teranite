@@ -1,10 +1,13 @@
+import json
+
 import pytest
 from adaptor.mediator.token_presenter import TokenPresenter
 from adaptor.mediator.token_viewmodel import TokenViewModel
+from dependencies.auth_container import AuthContainer
+from dependencies.dependency import provider
 from entity.auth_token import UserAuthToken
 from fastapi import status
 from hypothesis import given, strategies
-import json
 
 
 class FakeTokenViewModel(TokenViewModel):
@@ -15,10 +18,12 @@ class FakeTokenViewModel(TokenViewModel):
 @pytest.mark.asyncio
 @given(strategies.characters(), strategies.characters())
 async def test_present(accessToken: str, refreshToken: str):
-    viewModel = FakeTokenViewModel()
-    presenter = TokenPresenter(viewModel)
+    provider.wire({"auth": AuthContainer({"token-viewmodel": FakeTokenViewModel})})
+
+    presenter = TokenPresenter()
 
     await presenter.present(UserAuthToken(accessToken, refreshToken))
+    viewModel = provider["auth"]["token-viewmodel"]
 
     assert viewModel.response.status_code == status.HTTP_200_OK
 
