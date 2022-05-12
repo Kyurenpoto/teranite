@@ -10,7 +10,7 @@ class TokenController:
         return provider["auth"]["token-presenter"]
 
     def githubUsecase(self) -> GithubLoginWithoutToken:
-        return GithubLoginWithoutToken()
+        return provider["auth"]["github-login-without-token"]
 
     async def execute(self, code: TemporaryCode, sns_type: str):
         try:
