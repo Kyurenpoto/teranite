@@ -3,10 +3,10 @@ from dependencies.dependency import provider
 from entity.auth_token import UserAuthToken
 from fastapi import status
 from fastapi.responses import JSONResponse
-from usecase.github_login_port import GithubLoginWithoutTokenOutputPort
+from usecase.github_login_port import GithubLoginWithTemporaryCodeOutputPort
 
 
-class TokenPresenter(GithubLoginWithoutTokenOutputPort):
+class TokenPresenter(GithubLoginWithTemporaryCodeOutputPort):
     def viewModel(self) -> TokenViewModel:
         return provider["auth"]["token-viewmodel"]
 

@@ -1,3 +1,6 @@
+from test.utils import intersectDicts
+from typing import NamedTuple
+
 import pytest
 from adaptor.repository.github_authtoken_repository import GithubAuthTokenRepository
 from adaptor.repository.github_user_repository import GithubUserRepository
@@ -10,8 +13,8 @@ from entity.github_user import GithubUser
 from entity.github_user_info import GithubUserInfo
 from hypothesis import given, strategies
 
-from usecase.github_login import GithubLoginWithoutToken
-from usecase.github_login_port import GithubLoginWithoutTokenOutputPort
+from usecase.github_login import GithubLoginWithTemporaryCode
+from usecase.github_login_port import GithubLoginWithTemporaryCodeOutputPort
 
 
 class FakeGithubAuthTokenRepository(GithubAuthTokenRepository):
@@ -38,13 +41,19 @@ class FakeGithubUserInfoRepository(GithubUserInfoRepository):
         return GithubUserInfo(f"email@{authToken.accessToken}")
 
 
-class FakePresenter(GithubLoginWithoutTokenOutputPort):
+class FakePresenter(GithubLoginWithTemporaryCodeOutputPort):
     async def present(self, authToken: UserAuthToken):
         self.authToken = authToken
 
 
-class Fixture:
-    def __init__(self, users: dict):
+class Fixture(NamedTuple):
+    users: dict
+    userRepo: FakeGithubUserRepository
+
+
+class FixtureFactory:
+    @classmethod
+    def create(cls, users: dict):
         provider.wire(
             {
                 "auth": AuthContainer(
@@ -58,16 +67,16 @@ class Fixture:
             }
         )
 
-        self.users = users
+        fixture = Fixture(users, provider["auth"]["user-repo"])
+        fixture.userRepo.users = {**fixture.users}
 
-        self.userRepo: FakeGithubUserRepository = provider["auth"]["user-repo"]
-        self.userRepo.users = {**self.users}
+        return fixture
 
 
 @pytest.mark.asyncio
 @given(strategies.characters())
-async def test_login_old_user(code: str):
-    fixture = Fixture(
+async def test_existing_user_logs_in(code: str):
+    fixture = FixtureFactory.create(
         {
             f"email@access_token@{code}": GithubUser(
                 f"email@access_token@{code}", GithubAuthToken(f"access_token@{code}", f"refresh_token@{code}")
@@ -75,7 +84,7 @@ async def test_login_old_user(code: str):
         }
     )
 
-    await GithubLoginWithoutToken().login(GithubTemporaryCode(code))
+    await GithubLoginWithTemporaryCode().login(GithubTemporaryCode(code))
     presenter: FakePresenter = provider["auth"]["token-presenter"]
 
     assert presenter.authToken == UserAuthToken(f"email@access_token@{code}", f"email@access_token@{code}")
@@ -85,13 +94,13 @@ async def test_login_old_user(code: str):
 
 @pytest.mark.asyncio
 @given(strategies.characters())
-async def test_login_new_user(code: str):
-    fixture = Fixture({})
+async def test_new_user_logs_in(code: str):
+    fixture = FixtureFactory.create({})
 
-    await GithubLoginWithoutToken().login(GithubTemporaryCode(code))
+    await GithubLoginWithTemporaryCode().login(GithubTemporaryCode(code))
     presenter: FakePresenter = provider["auth"]["token-presenter"]
 
     assert presenter.authToken == UserAuthToken(f"email@access_token@{code}", f"email@access_token@{code}")
 
     assert len(fixture.userRepo.users) == len(fixture.users) + 1
-    assert dict(filter(lambda x: x[0] in fixture.userRepo.users, fixture.users.items())) == fixture.users
+    assert intersectDicts([fixture.userRepo.users, fixture.users]) == fixture.users
