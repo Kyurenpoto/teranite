@@ -12,3 +12,11 @@ class UserAuthToken(AuthToken):
 
 class GithubAuthToken(AuthToken):
     pass
+
+
+class OwnAuthToken(AuthToken):
+    pass
+
+
+class SocialAuthToken(AuthToken):
+    pass
