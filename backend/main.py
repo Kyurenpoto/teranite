@@ -1,7 +1,6 @@
-from database import models
-from database.database import engine
+from database import DB, Base, engine
 
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 
 from fastapi import FastAPI
@@ -23,8 +22,13 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-import github
-from config import container
 
-app.state.container = container
-app.state.container.wire(modules=[github])
+from dependencies.dependency import provider
+from dependencies.auth_container import AuthContainer
+
+provider.wire({"auth": AuthContainer()})
+
+import uvicorn
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", reload=True)
