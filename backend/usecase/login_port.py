@@ -18,7 +18,7 @@ class LoginWithTemporaryCodeOutputPort(ABC):
 
 class LoginWithAuthTokenInputPort(ABC):
     @abstractmethod
-    async def login(self, email, ownAuthToken: OwnAuthToken) -> None:
+    async def login(self, email: str, ownAuthToken: OwnAuthToken) -> None:
         pass
 
 

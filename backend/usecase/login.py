@@ -61,7 +61,7 @@ class LoginWithAuthToken(LoginWithAuthTokenInputPort):
     def __init__(self):
         self.outputPort: LoginWithAuthTokenOutputPort = provider["auth"]["token-presenter"]
 
-    async def login(self, email, ownAuthToken: OwnAuthToken) -> None:
+    async def login(self, email: str, ownAuthToken: OwnAuthToken) -> None:
         newOwnAuthToken = await ValidateOwnAuthToken().validate(email, ownAuthToken)
 
         await UpdateUserAuthToken().updateOwnAuthToken(email, newOwnAuthToken)
