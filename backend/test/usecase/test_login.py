@@ -14,11 +14,8 @@ from usecase.login_port import LoginWithAuthTokenOutputPort, LoginWithTemporaryC
 class FakeSocialAuthTokenRepository:
     def __init__(self):
         self.codes = set()
-        self.counts = {"read": 0}
 
     async def readByTemporaryCode(self, code: TemporaryCode, socialType: str) -> SocialAuthToken:
-        self.counts["read"] += 1
-
         if str(code) not in self.codes:
             raise RuntimeError("invalid temporary code")
 
@@ -28,31 +25,21 @@ class FakeSocialAuthTokenRepository:
 
 
 class FakeUserEmailRepository:
-    def __init__(self):
-        self.counts = {"read": 0}
-
     async def readBySocialAuthToken(self, socialAuthToken: SocialAuthToken, socialType: str) -> str:
-        self.counts["read"] += 1
-
         return f"email@{socialAuthToken.accessToken[7:]}"
 
 
 class FakeUserAuthTokenRepository:
     def __init__(self):
         self.users = {}
-        self.counts = {"read": 0, "update-social": 0, "update-own": 0}
 
     async def readByEmail(self, email: str) -> tuple[OwnAuthToken, SocialAuthToken, str]:
-        self.counts["read"] += 1
-
         if email not in self.users:
             raise RuntimeError("invalid email")
 
         return self.users[email]
 
     async def updateSocialAuthTokenByEmail(self, email: str, socialAuthToken: SocialAuthToken, socialType: str) -> None:
-        self.counts["update-social"] += 1
-
         self.users[email] = (
             OwnAuthToken("", "") if email not in self.users else self.users[email][0],
             socialAuthToken,
@@ -60,8 +47,6 @@ class FakeUserAuthTokenRepository:
         )
 
     async def updateOwnAuthTokenByEmail(self, email: str, ownAuthToken: OwnAuthToken) -> None:
-        self.counts["update-own"] += 1
-
         self.users[email] = (
             ownAuthToken,
             SocialAuthToken("", "") if email not in self.users else self.users[email][1],
@@ -70,22 +55,12 @@ class FakeUserAuthTokenRepository:
 
 
 class FakeOwnAuthTokenGenerator:
-    def __init__(self):
-        self.counts = {"generate": 0}
-
     async def generate(self, email: str, socialAuthToken: SocialAuthToken) -> OwnAuthToken:
-        self.counts["generate"] += 1
-
         return OwnAuthToken(f"access@{email[6:-1]}", f"refresh@{email[6:-1]}")
 
 
 class FakePresenter(LoginWithAuthTokenOutputPort, LoginWithTemporaryCodeOutputPort):
-    def __init__(self):
-        self.counts = {"present": 0}
-    
     async def present(self, ownAuthToken: OwnAuthToken):
-        self.counts["present"] += 1
-        
         self.ownAuthToken = ownAuthToken
 
 
