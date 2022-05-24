@@ -14,48 +14,78 @@ from usecase.login_port import LoginWithAuthTokenOutputPort, LoginWithTemporaryC
 class FakeSocialAuthTokenRepository:
     def __init__(self):
         self.codes = set()
+        self.counts = {"read": 0}
 
-    async def readByTemporaryCode(self, code: TemporaryCode) -> SocialAuthToken:
-        if code not in self.codes:
+    async def readByTemporaryCode(self, code: TemporaryCode, socialType: str) -> SocialAuthToken:
+        self.counts["read"] += 1
+
+        if str(code) not in self.codes:
             raise RuntimeError("invalid temporary code")
 
         self.codes.remove(code)
 
-        return SocialAuthToken(f"access@{code}", f"refresh@{code}")
+        return SocialAuthToken(f"access@{code}@{socialType}", f"refresh@{code}@{socialType}")
 
 
 class FakeUserEmailRepository:
-    async def readBySocialAuthToken(self, socialAuthToken: SocialAuthToken, snsType: str) -> str:
-        return f"{socialAuthToken.accessToken}@{snsType}"
+    def __init__(self):
+        self.counts = {"read": 0}
+
+    async def readBySocialAuthToken(self, socialAuthToken: SocialAuthToken, socialType: str) -> str:
+        self.counts["read"] += 1
+
+        return f"email@{socialAuthToken.accessToken[7:]}"
 
 
 class FakeUserAuthTokenRepository:
     def __init__(self):
         self.users = {}
+        self.counts = {"read": 0, "update-social": 0, "update-own": 0}
 
-    async def readByEmail(self, email: str) -> dict:
+    async def readByEmail(self, email: str) -> tuple[OwnAuthToken, SocialAuthToken, str]:
+        self.counts["read"] += 1
+
         if email not in self.users:
             raise RuntimeError("invalid email")
 
         return self.users[email]
 
     async def updateSocialAuthTokenByEmail(self, email: str, socialAuthToken: SocialAuthToken, socialType: str) -> None:
+        self.counts["update-social"] += 1
+
         self.users[email] = (
-            OwnAuthToken("", "") if email in self.users else self.users[email][0],
+            OwnAuthToken("", "") if email not in self.users else self.users[email][0],
             socialAuthToken,
             socialType,
         )
 
     async def updateOwnAuthTokenByEmail(self, email: str, ownAuthToken: OwnAuthToken) -> None:
+        self.counts["update-own"] += 1
+
         self.users[email] = (
             ownAuthToken,
-            SocialAuthToken("", "") if email in self.users else self.users[email][1],
+            SocialAuthToken("", "") if email not in self.users else self.users[email][1],
             "",
         )
 
 
+class FakeOwnAuthTokenGenerator:
+    def __init__(self):
+        self.counts = {"generate": 0}
+
+    async def generate(self, email: str, socialAuthToken: SocialAuthToken) -> OwnAuthToken:
+        self.counts["generate"] += 1
+
+        return OwnAuthToken(f"access@{email[6:-1]}", f"refresh@{email[6:-1]}")
+
+
 class FakePresenter(LoginWithAuthTokenOutputPort, LoginWithTemporaryCodeOutputPort):
+    def __init__(self):
+        self.counts = {"present": 0}
+    
     async def present(self, ownAuthToken: OwnAuthToken):
+        self.counts["present"] += 1
+        
         self.ownAuthToken = ownAuthToken
 
 
@@ -68,9 +98,7 @@ class Fixture(NamedTuple):
 
 class FixtureFactory:
     @classmethod
-    def createWithTemporaryCodes(
-        cls, codes: list[str] = [], users: dict[str, tuple[OwnAuthToken, SocialAuthToken, str]] = {}
-    ):
+    def create(cls, codes: list[str] = [], users: dict[str, tuple[OwnAuthToken, SocialAuthToken, str]] = {}):
         provider.wire(
             {
                 "auth": AuthContainer(
@@ -78,6 +106,7 @@ class FixtureFactory:
                         "social-auth-token-repo": FakeSocialAuthTokenRepository,
                         "user-email-repo": FakeUserEmailRepository,
                         "user-auth-token-repo": FakeUserAuthTokenRepository,
+                        "own-auth-token-generator": FakeOwnAuthTokenGenerator,
                         "token-presenter": FakePresenter,
                     }
                 )
@@ -98,9 +127,9 @@ class FixtureFactory:
 
 
 @pytest.mark.asyncio
-@given(strategies.lists(strategies.text(), min_size=1))
+@given(strategies.lists(strategies.text(), min_size=1, unique=True))
 async def test_invalid_temporary_code(codes: list[str]):
-    FixtureFactory.createWithTemporaryCodes(codes=codes[1:])
+    FixtureFactory.create(codes=codes[1:])
 
     with pytest.raises(RuntimeError) as e:
         await LoginWithTemporaryCode().login(TemporaryCode(codes[0]), "")
@@ -109,12 +138,12 @@ async def test_invalid_temporary_code(codes: list[str]):
 
 
 @pytest.mark.asyncio
-@given(strategies.lists(strategies.text(), min_size=1))
+@given(strategies.lists(strategies.text(), min_size=1, unique=True))
 async def test_valid_temporary_code_without_generate_own_auth_token(codes: list[str]):
-    fixture = FixtureFactory.createWithTemporaryCodes(
+    fixture = FixtureFactory.create(
         codes=codes,
         users={
-            f"access@{codes[0]}@": (
+            f"email@{codes[0]}@": (
                 OwnAuthToken(f"access@{codes[0]}", f"refresh@{codes[0]}"),
                 SocialAuthToken(f"access@{codes[0]}", f"refresh@{codes[0]}"),
                 "",
@@ -126,7 +155,7 @@ async def test_valid_temporary_code_without_generate_own_auth_token(codes: list[
 
     presenter: FakePresenter = provider["auth"]["token-presenter"]
 
-    assert presenter.ownAuthToken == fixture.users[f"access@{codes[0]}@"][0]
+    assert presenter.ownAuthToken == fixture.users[f"email@{codes[0]}@"][0]
     assert fixture.users == fixture.userAuthTokenRepo.users
     assert (set(fixture.codes) & fixture.socialAuthTokenRepo.codes) == fixture.socialAuthTokenRepo.codes and len(
         fixture.codes
@@ -134,15 +163,13 @@ async def test_valid_temporary_code_without_generate_own_auth_token(codes: list[
 
 
 @pytest.mark.asyncio
-@given(strategies.lists(strategies.text(), min_size=1))
+@given(strategies.lists(strategies.text(), min_size=1, unique=True))
 async def test_valid_temporary_code_with_generate_own_auth_token(codes: list[str]):
-    fixture = FixtureFactory.createWithTemporaryCodes(codes=codes)
+    fixture = FixtureFactory.create(codes=codes)
 
     await LoginWithTemporaryCode().login(TemporaryCode(codes[0]), "")
 
-    presenter: FakePresenter = provider["auth"]["token-presenter"]
-
-    assert presenter.ownAuthToken == fixture.users[f"access@{codes[0]}@"][0]
+    assert f"email@{codes[0]}@" not in fixture.users
     assert len(list(set(fixture.users.keys()) & set(fixture.userAuthTokenRepo.users.keys()))) == len(
         fixture.users
     ) and len(fixture.users) + 1 == len(fixture.userAuthTokenRepo.users)
@@ -152,9 +179,9 @@ async def test_valid_temporary_code_with_generate_own_auth_token(codes: list[str
 
 
 @pytest.mark.asyncio
-@given(strategies.lists(strategies.emails(), min_size=1))
+@given(strategies.lists(strategies.emails(), min_size=1, unique=True))
 async def test_invalid_email(emails: list[str]):
-    FixtureFactory.createWithTemporaryCodes(
+    FixtureFactory.create(
         users={
             x: (OwnAuthToken(f"access@{x}", f"refresh@{x}"), SocialAuthToken(f"access@{x}", f"refresh@{x}"), "")
             for x in emails[1:]
@@ -168,9 +195,9 @@ async def test_invalid_email(emails: list[str]):
 
 
 @pytest.mark.asyncio
-@given(strategies.lists(strategies.emails(), min_size=1))
+@given(strategies.lists(strategies.emails(), min_size=1, unique=True))
 async def test_invalid_own_auth_token(emails: list[str]):
-    FixtureFactory.createWithTemporaryCodes(
+    FixtureFactory.create(
         users={
             x: (OwnAuthToken(f"access@{x}", f"refresh@{x}"), SocialAuthToken(f"access@{x}", f"refresh@{x}"), "")
             for x in emails
@@ -184,9 +211,9 @@ async def test_invalid_own_auth_token(emails: list[str]):
 
 
 @pytest.mark.asyncio
-@given(strategies.lists(strategies.emails(), min_size=1))
+@given(strategies.lists(strategies.emails(), min_size=1, unique=True))
 async def test_not_update_own_auth_token(emails: list[str]):
-    fixture = FixtureFactory.createWithTemporaryCodes(
+    fixture = FixtureFactory.create(
         users={
             x: (OwnAuthToken(f"access@{x}", f"refresh@{x}"), SocialAuthToken(f"access@{x}", f"refresh@{x}"), "")
             for x in emails
@@ -203,9 +230,9 @@ async def test_not_update_own_auth_token(emails: list[str]):
 
 
 @pytest.mark.asyncio
-@given(strategies.lists(strategies.emails(), min_size=1))
+@given(strategies.lists(strategies.emails(), min_size=1, unique=True))
 async def test_update_own_auth_token(emails: list[str]):
-    fixture = FixtureFactory.createWithTemporaryCodes(
+    fixture = FixtureFactory.create(
         users={
             x: (OwnAuthToken(f"access@{x}", f"refresh@{x}"), SocialAuthToken(f"access@{x}", f"refresh@{x}"), "")
             for x in emails
