@@ -59,6 +59,9 @@ class UserAuthToken:
             and self.socialType == other.socialType
         )
 
+    def copy(self):
+        return UserAuthToken(self.email, self.ownAuthToken, self.expireDatetime, self.socialAuthToken, self.socialType)
+
 
 class UserAuthTokenBuilder:
     email: str
@@ -119,12 +122,19 @@ class FakeUserAuthTokenRepository:
 
 class FakeOwnAuthTokenGenerator:
     async def generate(self, email: str, authToken: AuthToken) -> OwnAuthToken:
-        return OwnAuthToken(f"access@{email[6:]}", f"refresh@{email[6:]}")
+        return OwnAuthToken(
+            f"access@{email[6:]}@{authToken.accessToken}", f"refresh@{email[6:]}@{authToken.refreshToken}"
+        )
 
 
 class FakePresenter(LoginWithAuthTokenOutputPort, LoginWithTemporaryCodeOutputPort):
     async def present(self, ownAuthToken: OwnAuthToken):
         self.ownAuthToken = ownAuthToken
+
+
+class FakeDatetimeValidator:
+    async def validateExpiration(self, expireDatetime: str) -> bool:
+        return expireDatetime == ""
 
 
 class Fixture(NamedTuple):
@@ -146,6 +156,7 @@ class FixtureFactory:
                         "user-auth-token-repo": FakeUserAuthTokenRepository,
                         "own-auth-token-generator": FakeOwnAuthTokenGenerator,
                         "token-presenter": FakePresenter,
+                        "datetime-validator": FakeDatetimeValidator,
                     }
                 )
             }
@@ -159,7 +170,7 @@ class FixtureFactory:
         )
 
         fixture.socialAuthTokenRepo.codes = set(fixture.codes)
-        fixture.userAuthTokenRepo.users = {**fixture.users}
+        fixture.userAuthTokenRepo.users = {k: v.copy() for k, v in fixture.users.items()}
 
         return fixture
 
@@ -168,7 +179,9 @@ class FixtureFactory:
         return FixtureFactory.create(
             users={
                 x: UserAuthTokenBuilder(x)
-                .fillOwnAuthTokenWithExpireDatetime(OwnAuthToken(f"access@{x}", f"refresh@{x}"), "")
+                .fillOwnAuthTokenWithExpireDatetime(
+                    OwnAuthToken(f"access@{x}@access@{x}", f"refresh@{x}@refresh@{x}"), ""
+                )
                 .fillSocialAuthTokenWithSocialType(SocialAuthToken(f"access@{x}", f"refresh@{x}"), "")
                 .build()
                 for x in emails
@@ -194,7 +207,9 @@ async def test_valid_temporary_code_without_generate_own_auth_token(codes: list[
         codes=codes,
         users={
             f"email@{codes[0]}": UserAuthTokenBuilder(f"email@{codes[0]}")
-            .fillOwnAuthTokenWithExpireDatetime(OwnAuthToken(f"access@{codes[0]}", f"refresh@{codes[0]}"), "")
+            .fillOwnAuthTokenWithExpireDatetime(
+                OwnAuthToken(f"access@{codes[0]}@access@{codes[0]}", f"refresh@{codes[0]}@refresh@{codes[0]}"), ""
+            )
             .fillSocialAuthTokenWithSocialType(SocialAuthToken(f"access@{codes[0]}", f"refresh@{codes[0]}"), "")
             .build()
         },
@@ -258,7 +273,10 @@ async def test_not_update_own_auth_token(emails: list[str]):
 
     presenter: FakePresenter = provider["auth"]["token-presenter"]
 
-    assert presenter.ownAuthToken == fixture.users[emails[0]].ownAuthToken
+    assert (
+        presenter.ownAuthToken == fixture.users[emails[0]].ownAuthToken
+        and fixture.users[emails[0]].expireDatetime == fixture.userAuthTokenRepo.users[emails[0]].expireDatetime
+    )
     assert fixture.users == fixture.userAuthTokenRepo.users
     assert set(fixture.codes) == fixture.socialAuthTokenRepo.codes
 
@@ -267,11 +285,22 @@ async def test_not_update_own_auth_token(emails: list[str]):
 @given(strategies.lists(strategies.emails(), min_size=1, unique=True))
 async def test_update_own_auth_token(emails: list[str]):
     fixture = FixtureFactory.createFromEmails(emails)
+    fixture.users[emails[0]].expireDatetime = "-"
+    fixture.userAuthTokenRepo.users[emails[0]].expireDatetime = "-"
+
+    print(fixture.users[emails[0]].ownAuthToken)
 
     await LoginWithAuthToken().login(emails[0], fixture.users[emails[0]].ownAuthToken)
 
     presenter: FakePresenter = provider["auth"]["token-presenter"]
 
-    assert presenter.ownAuthToken != fixture.users[emails[0]].ownAuthToken
-    assert fixture.users != fixture.userAuthTokenRepo.users
+    print(fixture.users[emails[0]].ownAuthToken)
+
+    assert (
+        presenter.ownAuthToken != fixture.users[emails[0]].ownAuthToken
+        and fixture.users[emails[0]].expireDatetime != fixture.userAuthTokenRepo.users[emails[0]].expireDatetime
+    )
+    assert dict(filter(lambda x: x[0] != emails[0], fixture.users.items())) == dict(
+        filter(lambda x: x[0] != emails[0], fixture.userAuthTokenRepo.users.items())
+    )
     assert set(fixture.codes) == fixture.socialAuthTokenRepo.codes
