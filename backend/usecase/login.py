@@ -1,5 +1,5 @@
 from dependencies.dependency import provider
-from entity.auth_token import OwnAuthToken, SocialAuthToken
+from entity.auth_token import AuthToken, OwnAuthToken, SocialAuthToken
 from entity.temporary_code import TemporaryCode
 
 from usecase.login_port import (
@@ -11,35 +11,57 @@ from usecase.login_port import (
 
 
 class IssueSocialServiceAuthToken:
+    def __init__(self):
+        self.repository = provider["auth"]["social-auth-token-repo"]
+
     async def issue(self, temporaryCode: TemporaryCode, socialType: str) -> SocialAuthToken:
-        return SocialAuthToken("", "")
+        return await self.repository.readByTemporaryCode(temporaryCode, socialType)
+
+
+class AccessUserEmail:
+    def __init__(self):
+        self.repository = provider["auth"]["user-email-repo"]
+
+    async def access(self, socialAuthToken: SocialAuthToken, socialType: str) -> str:
+        return await self.repository.readBySocialAuthToken(socialAuthToken, socialType)
 
 
 class GenerateOwnAuthToken:
-    async def generate(self, email: str, socialAuthToken: SocialAuthToken) -> OwnAuthToken:
-        return OwnAuthToken("", "")
+    def __init__(self):
+        self.repository = provider["auth"]["user-auth-token-repo"]
+        self.generator = provider["auth"]["own-auth-token-generator"]
+        self.validator = provider["auth"]["datetime-validator"]
+
+    async def generateFromSocialAuthToken(self, email: str, socialAuthToken: SocialAuthToken) -> OwnAuthToken:
+        return await self.generateToken(email, socialAuthToken)
+
+    async def generateFromOwnAuthToken(self, email: str, ownAuthToken: OwnAuthToken) -> OwnAuthToken:
+        userAuthToken = await self.repository.readByEmail(email)
+
+        if userAuthToken.ownAuthToken != ownAuthToken:
+            raise RuntimeError("invalid own auth token")
+
+        return (
+            ownAuthToken
+            if await self.validator.validateExpiration(userAuthToken.expireDatetime)
+            else await self.generateToken(email, ownAuthToken)
+        )
+
+    async def generateToken(self, email: str, authToken: AuthToken) -> OwnAuthToken:
+        ownAuthToken = await self.generator.generate(email, authToken)
+
+        return ownAuthToken
 
 
-class ValidateOwnAuthToken:
-    async def validate(self, email: str, ownAuthToken: OwnAuthToken) -> OwnAuthToken:
-        return OwnAuthToken("", "")
-
-
-class AccessUserEmail:
-    async def access(self, socialAuthToken, socialType):
 class UpdateUserAuthToken:
+    def __init__(self):
+        self.repository = provider["auth"]["user-auth-token-repo"]
+
     async def updateSocialAuthToken(self, email: str, socialAuthToken: SocialAuthToken, socialType: str) -> None:
-        pass
+        await self.repository.updateSocialAuthTokenByEmail(email, socialAuthToken, socialType)
 
     async def updateOwnAuthToken(self, email: str, ownAuthToken: OwnAuthToken) -> None:
-        pass
-
-
-    async def updateOwnAuthToken(self, email, ownAuthToken):
-        pass
-class AccessUserEmail:
-    async def access(self, socialAuthToken: SocialAuthToken, socialType: str) -> str:
-        return ""
+        await self.repository.updateOwnAuthTokenByEmail(email, ownAuthToken)
 
 
 class LoginWithTemporaryCode(LoginWithTemporaryCodeInputPort):
@@ -49,7 +71,7 @@ class LoginWithTemporaryCode(LoginWithTemporaryCodeInputPort):
     async def login(self, temporaryCode: TemporaryCode, socialType: str) -> None:
         socialAuthToken = await IssueSocialServiceAuthToken().issue(temporaryCode, socialType)
         email = await AccessUserEmail().access(socialAuthToken, socialType)
-        ownAuthToken = await GenerateOwnAuthToken().generate(email, socialAuthToken)
+        ownAuthToken = await GenerateOwnAuthToken().generateFromSocialAuthToken(email, socialAuthToken)
 
         await UpdateUserAuthToken().updateSocialAuthToken(email, socialAuthToken, socialType)
         await UpdateUserAuthToken().updateOwnAuthToken(email, ownAuthToken)
@@ -62,7 +84,7 @@ class LoginWithAuthToken(LoginWithAuthTokenInputPort):
         self.outputPort: LoginWithAuthTokenOutputPort = provider["auth"]["token-presenter"]
 
     async def login(self, email: str, ownAuthToken: OwnAuthToken) -> None:
-        newOwnAuthToken = await ValidateOwnAuthToken().validate(email, ownAuthToken)
+        newOwnAuthToken = await GenerateOwnAuthToken().generateFromOwnAuthToken(email, ownAuthToken)
 
         await UpdateUserAuthToken().updateOwnAuthToken(email, newOwnAuthToken)
 
