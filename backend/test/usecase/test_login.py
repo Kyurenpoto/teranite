@@ -1,14 +1,15 @@
 from typing import NamedTuple
 
 import pytest
-from dependencies.auth_container import AuthContainer
-from dependencies.dependency import provider
-from entity.auth_token import AuthToken, OwnAuthToken, SocialAuthToken
-from entity.temporary_code import TemporaryCode
-from entity.user_auth_token import UserAuthToken, UserAuthTokenBuilder
 from adaptor.repository.social_auth_token_repository import FakeSocialAuthTokenRepository
 from adaptor.repository.user_auth_token_repository import FakeUserAuthTokenRepository
 from adaptor.repository.user_email_repository import FakeUserEmailRepository
+from dependencies.auth_container import AuthContainer
+from dependencies.dependency import provider
+from entity.auth_token import AuthToken, OwnAuthToken, SocialAuthToken
+from entity.raw_datetime import FakeRawDatetime, RawDatetime
+from entity.temporary_code import TemporaryCode
+from entity.user_auth_token import UserAuthToken, UserAuthTokenBuilder
 from hypothesis import given, strategies
 
 from usecase.login import LoginWithAuthToken, LoginWithTemporaryCode
@@ -25,11 +26,6 @@ class FakeOwnAuthTokenGenerator:
 class FakePresenter(LoginWithAuthTokenOutputPort, LoginWithTemporaryCodeOutputPort):
     async def present(self, ownAuthToken: OwnAuthToken):
         self.ownAuthToken = ownAuthToken
-
-
-class FakeDatetimeValidator:
-    async def validateExpiration(self, expireDatetime: str) -> bool:
-        return expireDatetime == ""
 
 
 class Fixture(NamedTuple):
@@ -51,7 +47,6 @@ class FixtureFactory:
                         "user-auth-token-repo": FakeUserAuthTokenRepository,
                         "own-auth-token-generator": FakeOwnAuthTokenGenerator,
                         "token-presenter": FakePresenter,
-                        "datetime-validator": FakeDatetimeValidator,
                     }
                 )
             }
@@ -75,7 +70,7 @@ class FixtureFactory:
             users={
                 x: UserAuthTokenBuilder(x)
                 .fillOwnAuthTokenWithExpireDatetime(
-                    OwnAuthToken(f"access@{x}@access@{x}", f"refresh@{x}@refresh@{x}"), ""
+                    OwnAuthToken(f"access@{x}@access@{x}", f"refresh@{x}@refresh@{x}"), RawDatetime("")
                 )
                 .fillSocialAuthTokenWithSocialType(SocialAuthToken(f"access@{x}", f"refresh@{x}"), "")
                 .build()
@@ -103,7 +98,8 @@ async def test_valid_temporary_code_without_generate_own_auth_token(codes: list[
         users={
             f"email@{codes[0]}": UserAuthTokenBuilder(f"email@{codes[0]}")
             .fillOwnAuthTokenWithExpireDatetime(
-                OwnAuthToken(f"access@{codes[0]}@access@{codes[0]}", f"refresh@{codes[0]}@refresh@{codes[0]}"), ""
+                OwnAuthToken(f"access@{codes[0]}@access@{codes[0]}", f"refresh@{codes[0]}@refresh@{codes[0]}"),
+                RawDatetime(""),
             )
             .fillSocialAuthTokenWithSocialType(SocialAuthToken(f"access@{codes[0]}", f"refresh@{codes[0]}"), "")
             .build()
@@ -163,6 +159,8 @@ async def test_invalid_own_auth_token(emails: list[str]):
 @given(strategies.lists(strategies.emails(), min_size=1, unique=True))
 async def test_not_update_own_auth_token(emails: list[str]):
     fixture = FixtureFactory.createFromEmails(emails)
+    fixture.users[emails[0]].expireDatetime = FakeRawDatetime("")
+    fixture.userAuthTokenRepo.users[emails[0]].expireDatetime = FakeRawDatetime("")
 
     await LoginWithAuthToken().login(emails[0], fixture.users[emails[0]].ownAuthToken)
 
@@ -180,8 +178,8 @@ async def test_not_update_own_auth_token(emails: list[str]):
 @given(strategies.lists(strategies.emails(), min_size=1, unique=True))
 async def test_update_own_auth_token(emails: list[str]):
     fixture = FixtureFactory.createFromEmails(emails)
-    fixture.users[emails[0]].expireDatetime = "-"
-    fixture.userAuthTokenRepo.users[emails[0]].expireDatetime = "-"
+    fixture.users[emails[0]].expireDatetime = FakeRawDatetime("-")
+    fixture.userAuthTokenRepo.users[emails[0]].expireDatetime = FakeRawDatetime("-")
 
     print(fixture.users[emails[0]].ownAuthToken)
 

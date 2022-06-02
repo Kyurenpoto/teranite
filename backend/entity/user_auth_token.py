@@ -1,18 +1,19 @@
 from entity.auth_token import OwnAuthToken, SocialAuthToken
+from entity.raw_datetime import RawDatetime
 
 
 class UserAuthToken:
     email: str
     ownAuthToken: OwnAuthToken
+    expireDatetime: RawDatetime
     socialAuthToken: SocialAuthToken
     socialType: str
-    expireDatetime: str
 
     def __init__(
         self,
         email: str,
         ownAuthToken: OwnAuthToken,
-        expireDatetime: str,
+        expireDatetime: RawDatetime,
         socialAuthToken: SocialAuthToken,
         socialType: str,
     ):
@@ -38,18 +39,18 @@ class UserAuthToken:
 class UserAuthTokenBuilder:
     email: str
     ownAuthToken: OwnAuthToken
-    expireDatetime: str
+    expireDatetime: RawDatetime
     socialAuthToken: SocialAuthToken
     socialType: str
 
     def __init__(self, email):
         self.email = email
         self.ownAuthToken = OwnAuthToken("", "")
+        self.expireDatetime = RawDatetime("")
         self.socialAuthToken = SocialAuthToken("", "")
         self.socialType = ""
-        self.expireDatetime = ""
 
-    def fillOwnAuthTokenWithExpireDatetime(self, ownAuthToken: OwnAuthToken, expireDatetime: str):
+    def fillOwnAuthTokenWithExpireDatetime(self, ownAuthToken: OwnAuthToken, expireDatetime: RawDatetime):
         self.ownAuthToken = ownAuthToken
         self.expireDatetime = expireDatetime
 

@@ -30,7 +30,6 @@ class GenerateOwnAuthToken:
     def __init__(self):
         self.repository = provider["auth"]["user-auth-token-repo"]
         self.generator = provider["auth"]["own-auth-token-generator"]
-        self.validator = provider["auth"]["datetime-validator"]
 
     async def generateFromSocialAuthToken(self, email: str, socialAuthToken: SocialAuthToken) -> OwnAuthToken:
         return await self.generateToken(email, socialAuthToken)
@@ -41,11 +40,7 @@ class GenerateOwnAuthToken:
         if userAuthToken.ownAuthToken != ownAuthToken:
             raise RuntimeError("invalid own auth token")
 
-        return (
-            ownAuthToken
-            if await self.validator.validateExpiration(userAuthToken.expireDatetime)
-            else await self.generateToken(email, ownAuthToken)
-        )
+        return ownAuthToken if userAuthToken.expireDatetime.expired() else await self.generateToken(email, ownAuthToken)
 
     async def generateToken(self, email: str, authToken: AuthToken) -> OwnAuthToken:
         ownAuthToken = await self.generator.generate(email, authToken)
