@@ -5,119 +5,14 @@ from dependencies.auth_container import AuthContainer
 from dependencies.dependency import provider
 from entity.auth_token import AuthToken, OwnAuthToken, SocialAuthToken
 from entity.temporary_code import TemporaryCode
+from entity.user_auth_token import UserAuthToken, UserAuthTokenBuilder
+from adaptor.repository.social_auth_token_repository import FakeSocialAuthTokenRepository
+from adaptor.repository.user_auth_token_repository import FakeUserAuthTokenRepository
+from adaptor.repository.user_email_repository import FakeUserEmailRepository
 from hypothesis import given, strategies
 
 from usecase.login import LoginWithAuthToken, LoginWithTemporaryCode
 from usecase.login_port import LoginWithAuthTokenOutputPort, LoginWithTemporaryCodeOutputPort
-
-
-class FakeSocialAuthTokenRepository:
-    def __init__(self):
-        self.codes = set()
-
-    async def readByTemporaryCode(self, code: TemporaryCode, socialType: str) -> SocialAuthToken:
-        if str(code) not in self.codes:
-            raise RuntimeError("invalid temporary code")
-
-        self.codes.remove(code)
-
-        return SocialAuthToken(f"access@{code}", f"refresh@{code}")
-
-
-class FakeUserEmailRepository:
-    async def readBySocialAuthToken(self, socialAuthToken: SocialAuthToken, socialType: str) -> str:
-        return f"email@{socialAuthToken.accessToken[7:]}"
-
-
-class UserAuthToken:
-    email: str
-    ownAuthToken: OwnAuthToken
-    socialAuthToken: SocialAuthToken
-    socialType: str
-    expireDatetime: str
-
-    def __init__(
-        self,
-        email: str,
-        ownAuthToken: OwnAuthToken,
-        expireDatetime: str,
-        socialAuthToken: SocialAuthToken,
-        socialType: str,
-    ):
-        self.email = email
-        self.ownAuthToken = ownAuthToken
-        self.expireDatetime = expireDatetime
-        self.socialAuthToken = socialAuthToken
-        self.socialType = socialType
-
-    def __eq__(self, other) -> bool:
-        return (
-            self.email == other.email
-            and self.ownAuthToken == other.ownAuthToken
-            and self.expireDatetime == other.expireDatetime
-            and self.socialAuthToken == other.socialAuthToken
-            and self.socialType == other.socialType
-        )
-
-    def copy(self):
-        return UserAuthToken(self.email, self.ownAuthToken, self.expireDatetime, self.socialAuthToken, self.socialType)
-
-
-class UserAuthTokenBuilder:
-    email: str
-    ownAuthToken: OwnAuthToken
-    expireDatetime: str
-    socialAuthToken: SocialAuthToken
-    socialType: str
-
-    def __init__(self, email):
-        self.email = email
-        self.ownAuthToken = OwnAuthToken("", "")
-        self.socialAuthToken = SocialAuthToken("", "")
-        self.socialType = ""
-        self.expireDatetime = ""
-
-    def fillOwnAuthTokenWithExpireDatetime(self, ownAuthToken: OwnAuthToken, expireDatetime: str):
-        self.ownAuthToken = ownAuthToken
-        self.expireDatetime = expireDatetime
-
-        return self
-
-    def fillSocialAuthTokenWithSocialType(self, socialAuthToken: SocialAuthToken, socialType: str):
-        self.socialAuthToken = socialAuthToken
-        self.socialType = socialType
-
-        return self
-
-    def build(self) -> UserAuthToken:
-        return UserAuthToken(self.email, self.ownAuthToken, self.expireDatetime, self.socialAuthToken, self.socialType)
-
-
-class FakeUserAuthTokenRepository:
-    def __init__(self):
-        self.users = {}
-
-    async def readByEmail(self, email: str) -> UserAuthToken:
-        if email not in self.users:
-            raise RuntimeError("invalid email")
-
-        return self.users[email]
-
-    async def updateSocialAuthTokenByEmail(self, email: str, socialAuthToken: SocialAuthToken, socialType: str) -> None:
-        if email not in self.users:
-            self.users[email] = (
-                UserAuthTokenBuilder(email).fillSocialAuthTokenWithSocialType(socialAuthToken, socialType).build()
-            )
-        else:
-            self.users[email].socialAuthtoken = socialAuthToken
-            self.users[email].socialType = socialType
-
-    async def updateOwnAuthTokenByEmail(self, email: str, ownAuthToken: OwnAuthToken) -> None:
-        if email not in self.users:
-            self.users[email] = UserAuthTokenBuilder(email).fillOwnAuthTokenWithExpireDatetime(ownAuthToken, "").build()
-        else:
-            self.users[email].ownAuthToken = ownAuthToken
-            self.users[email].expireDatetime = ""
 
 
 class FakeOwnAuthTokenGenerator:
