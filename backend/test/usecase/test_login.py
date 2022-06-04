@@ -1,31 +1,19 @@
 from typing import NamedTuple
 
 import pytest
+from adaptor.mediator.login_presenter import FakePresenter
 from adaptor.repository.social_auth_token_repository import FakeSocialAuthTokenRepository
 from adaptor.repository.user_auth_token_repository import FakeUserAuthTokenRepository
 from adaptor.repository.user_email_repository import FakeUserEmailRepository
 from dependencies.auth_container import AuthContainer
 from dependencies.dependency import provider
-from entity.auth_token import AuthToken, OwnAuthToken, SocialAuthToken
+from entity.auth_token import FakeOwnAuthTokenGenerator, OwnAuthToken, SocialAuthToken
 from entity.raw_datetime import FakeRawDatetime, RawDatetime
 from entity.temporary_code import TemporaryCode
 from entity.user_auth_token import UserAuthToken, UserAuthTokenBuilder
 from hypothesis import given, strategies
 
 from usecase.login import LoginWithAuthToken, LoginWithTemporaryCode
-from usecase.login_port import LoginWithAuthTokenOutputPort, LoginWithTemporaryCodeOutputPort
-
-
-class FakeOwnAuthTokenGenerator:
-    async def generate(self, email: str, authToken: AuthToken) -> OwnAuthToken:
-        return OwnAuthToken(
-            f"access@{email[6:]}@{authToken.accessToken}", f"refresh@{email[6:]}@{authToken.refreshToken}"
-        )
-
-
-class FakePresenter(LoginWithAuthTokenOutputPort, LoginWithTemporaryCodeOutputPort):
-    async def present(self, ownAuthToken: OwnAuthToken):
-        self.ownAuthToken = ownAuthToken
 
 
 class Fixture(NamedTuple):
