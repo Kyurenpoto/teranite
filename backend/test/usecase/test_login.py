@@ -5,7 +5,7 @@ from adaptor.mediator.login_presenter import FakePresenter
 from adaptor.repository.social_auth_token_repository import FakeSocialAuthTokenRepository
 from adaptor.repository.user_auth_token_repository import FakeUserAuthTokenRepository
 from adaptor.repository.user_email_repository import FakeUserEmailRepository
-from dependencies.auth_container import AuthContainer
+from dependencies.login_container import LoginContainer
 from dependencies.dependency import provider
 from entity.auth_token import FakeOwnAuthTokenGenerator, OwnAuthToken, SocialAuthToken
 from entity.raw_datetime import FakeRawDatetime, RawDatetime
@@ -28,13 +28,13 @@ class FixtureFactory:
     def create(cls, codes: list[str] = [], users: dict[str, UserAuthToken] = {}):
         provider.wire(
             {
-                "auth": AuthContainer(
+                "login": LoginContainer(
                     {
                         "social-auth-token-repo": FakeSocialAuthTokenRepository,
                         "user-email-repo": FakeUserEmailRepository,
                         "user-auth-token-repo": FakeUserAuthTokenRepository,
                         "own-auth-token-generator": FakeOwnAuthTokenGenerator,
-                        "token-presenter": FakePresenter,
+                        "login-presenter": FakePresenter,
                     }
                 )
             }
@@ -43,8 +43,8 @@ class FixtureFactory:
         fixture = Fixture(
             codes,
             users,
-            provider["auth"]["social-auth-token-repo"],
-            provider["auth"]["user-auth-token-repo"],
+            provider["login"]["social-auth-token-repo"],
+            provider["login"]["user-auth-token-repo"],
         )
 
         fixture.socialAuthTokenRepo.codes = set(fixture.codes)
@@ -96,7 +96,7 @@ async def test_valid_temporary_code_without_generate_own_auth_token(codes: list[
 
     await LoginWithTemporaryCode().login(TemporaryCode(codes[0]), "")
 
-    presenter: FakePresenter = provider["auth"]["token-presenter"]
+    presenter: FakePresenter = provider["login"]["login-presenter"]
 
     assert presenter.ownAuthToken == fixture.users[f"email@{codes[0]}"].ownAuthToken
     assert fixture.users == fixture.userAuthTokenRepo.users
@@ -152,7 +152,7 @@ async def test_not_update_own_auth_token(emails: list[str]):
 
     await LoginWithAuthToken().login(emails[0], fixture.users[emails[0]].ownAuthToken)
 
-    presenter: FakePresenter = provider["auth"]["token-presenter"]
+    presenter: FakePresenter = provider["login"]["login-presenter"]
 
     assert (
         presenter.ownAuthToken == fixture.users[emails[0]].ownAuthToken
@@ -173,7 +173,7 @@ async def test_update_own_auth_token(emails: list[str]):
 
     await LoginWithAuthToken().login(emails[0], fixture.users[emails[0]].ownAuthToken)
 
-    presenter: FakePresenter = provider["auth"]["token-presenter"]
+    presenter: FakePresenter = provider["login"]["login-presenter"]
 
     print(fixture.users[emails[0]].ownAuthToken)
 

@@ -12,7 +12,7 @@ from usecase.login_port import (
 
 class IssueSocialServiceAuthToken:
     def __init__(self):
-        self.repository = provider["auth"]["social-auth-token-repo"]
+        self.repository = provider["login"]["social-auth-token-repo"]
 
     async def issue(self, temporaryCode: TemporaryCode, socialType: str) -> SocialAuthToken:
         return await self.repository.readByTemporaryCode(temporaryCode, socialType)
@@ -20,7 +20,7 @@ class IssueSocialServiceAuthToken:
 
 class AccessUserEmail:
     def __init__(self):
-        self.repository = provider["auth"]["user-email-repo"]
+        self.repository = provider["login"]["user-email-repo"]
 
     async def access(self, socialAuthToken: SocialAuthToken, socialType: str) -> str:
         return await self.repository.readBySocialAuthToken(socialAuthToken, socialType)
@@ -28,8 +28,8 @@ class AccessUserEmail:
 
 class GenerateOwnAuthToken:
     def __init__(self):
-        self.repository = provider["auth"]["user-auth-token-repo"]
-        self.generator = provider["auth"]["own-auth-token-generator"]
+        self.repository = provider["login"]["user-auth-token-repo"]
+        self.generator = provider["login"]["own-auth-token-generator"]
 
     async def generateFromSocialAuthToken(self, email: str, socialAuthToken: SocialAuthToken) -> OwnAuthToken:
         return await self.generateToken(email, socialAuthToken)
@@ -50,7 +50,7 @@ class GenerateOwnAuthToken:
 
 class UpdateUserAuthToken:
     def __init__(self):
-        self.repository = provider["auth"]["user-auth-token-repo"]
+        self.repository = provider["login"]["user-auth-token-repo"]
 
     async def updateSocialAuthToken(self, email: str, socialAuthToken: SocialAuthToken, socialType: str) -> None:
         await self.repository.updateSocialAuthTokenByEmail(email, socialAuthToken, socialType)
@@ -61,7 +61,7 @@ class UpdateUserAuthToken:
 
 class LoginWithTemporaryCode(LoginWithTemporaryCodeInputPort):
     def __init__(self):
-        self.outputPort: LoginWithTemporaryCodeOutputPort = provider["auth"]["token-presenter"]
+        self.outputPort: LoginWithTemporaryCodeOutputPort = provider["login"]["login-presenter"]
 
     async def login(self, temporaryCode: TemporaryCode, socialType: str) -> None:
         socialAuthToken = await IssueSocialServiceAuthToken().issue(temporaryCode, socialType)
@@ -76,7 +76,7 @@ class LoginWithTemporaryCode(LoginWithTemporaryCodeInputPort):
 
 class LoginWithAuthToken(LoginWithAuthTokenInputPort):
     def __init__(self):
-        self.outputPort: LoginWithAuthTokenOutputPort = provider["auth"]["token-presenter"]
+        self.outputPort: LoginWithAuthTokenOutputPort = provider["login"]["login-presenter"]
 
     async def login(self, email: str, ownAuthToken: OwnAuthToken) -> None:
         newOwnAuthToken = await GenerateOwnAuthToken().generateFromOwnAuthToken(email, ownAuthToken)
