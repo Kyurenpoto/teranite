@@ -1,5 +1,8 @@
+from adaptor.repository.social_auth_token_repository import SocialAuthTokenRepository
+from adaptor.repository.user_auth_token_repository import UserAuthTokenRepository
+from adaptor.repository.user_email_repository import UserEmailRepository
 from dependencies.dependency import provider
-from entity.auth_token import AuthToken, OwnAuthToken, SocialAuthToken
+from entity.auth_token import AuthToken, OwnAuthToken, SocialAuthToken, OwnAuthTokenGenerator
 from entity.temporary_code import TemporaryCode
 
 from usecase.login_port import (
@@ -10,9 +13,14 @@ from usecase.login_port import (
 )
 
 
+class InvalidOwnAuthTokenError(RuntimeError):
+    def __init__(self):
+        super().__init__("invalid own auth token")
+
+
 class IssueSocialServiceAuthToken:
     def __init__(self):
-        self.repository = provider["login"]["social-auth-token-repo"]
+        self.repository: SocialAuthTokenRepository = provider["login"]["social-auth-token-repo"]
 
     async def issue(self, temporaryCode: TemporaryCode, socialType: str) -> SocialAuthToken:
         return await self.repository.readByTemporaryCode(temporaryCode, socialType)
@@ -20,7 +28,7 @@ class IssueSocialServiceAuthToken:
 
 class AccessUserEmail:
     def __init__(self):
-        self.repository = provider["login"]["user-email-repo"]
+        self.repository: UserEmailRepository = provider["login"]["user-email-repo"]
 
     async def access(self, socialAuthToken: SocialAuthToken, socialType: str) -> str:
         return await self.repository.readBySocialAuthToken(socialAuthToken, socialType)
@@ -28,8 +36,8 @@ class AccessUserEmail:
 
 class GenerateOwnAuthToken:
     def __init__(self):
-        self.repository = provider["login"]["user-auth-token-repo"]
-        self.generator = provider["login"]["own-auth-token-generator"]
+        self.repository: UserAuthTokenRepository = provider["login"]["user-auth-token-repo"]
+        self.generator: OwnAuthTokenGenerator = provider["login"]["own-auth-token-generator"]
 
     async def generateFromSocialAuthToken(self, email: str, socialAuthToken: SocialAuthToken) -> OwnAuthToken:
         return await self.generateToken(email, socialAuthToken)
@@ -38,7 +46,7 @@ class GenerateOwnAuthToken:
         userAuthToken = await self.repository.readByEmail(email)
 
         if userAuthToken.ownAuthToken != ownAuthToken:
-            raise RuntimeError("invalid own auth token")
+            raise InvalidOwnAuthTokenError()
 
         return ownAuthToken if userAuthToken.expireDatetime.expired() else await self.generateToken(email, ownAuthToken)
 
@@ -50,7 +58,7 @@ class GenerateOwnAuthToken:
 
 class UpdateUserAuthToken:
     def __init__(self):
-        self.repository = provider["login"]["user-auth-token-repo"]
+        self.repository: UserAuthTokenRepository = provider["login"]["user-auth-token-repo"]
 
     async def updateSocialAuthToken(self, email: str, socialAuthToken: SocialAuthToken, socialType: str) -> None:
         await self.repository.updateSocialAuthTokenByEmail(email, socialAuthToken, socialType)

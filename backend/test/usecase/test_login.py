@@ -2,18 +2,18 @@ from typing import NamedTuple
 
 import pytest
 from adaptor.mediator.login_presenter import FakePresenter
-from adaptor.repository.social_auth_token_repository import FakeSocialAuthTokenRepository
-from adaptor.repository.user_auth_token_repository import FakeUserAuthTokenRepository
+from adaptor.repository.social_auth_token_repository import FakeSocialAuthTokenRepository, InvalidTemporaryCodeError
+from adaptor.repository.user_auth_token_repository import FakeUserAuthTokenRepository, InvalidEmailError
 from adaptor.repository.user_email_repository import FakeUserEmailRepository
-from dependencies.login_container import LoginContainer
 from dependencies.dependency import provider
+from dependencies.login_container import LoginContainer
 from entity.auth_token import FakeOwnAuthTokenGenerator, OwnAuthToken, SocialAuthToken
 from entity.raw_datetime import FakeRawDatetime, RawDatetime
 from entity.temporary_code import TemporaryCode
 from entity.user_auth_token import UserAuthToken, UserAuthTokenBuilder
 from hypothesis import given, strategies
 
-from usecase.login import LoginWithAuthToken, LoginWithTemporaryCode
+from usecase.login import InvalidOwnAuthTokenError, LoginWithAuthToken, LoginWithTemporaryCode
 
 
 class Fixture(NamedTuple):
@@ -72,10 +72,8 @@ class FixtureFactory:
 async def test_invalid_temporary_code(codes: list[str]):
     FixtureFactory.create(codes=codes[1:])
 
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(InvalidTemporaryCodeError) as e:
         await LoginWithTemporaryCode().login(TemporaryCode(codes[0]), "")
-
-    assert e.value.args[0] == "invalid temporary code"
 
 
 @pytest.mark.asyncio
@@ -126,10 +124,8 @@ async def test_valid_temporary_code_with_generate_own_auth_token(codes: list[str
 async def test_invalid_email(emails: list[str]):
     fixture = FixtureFactory.createFromEmails(emails[1:])
 
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(InvalidEmailError) as e:
         await LoginWithAuthToken().login(emails[0], OwnAuthToken("", ""))
-
-    assert e.value.args[0] == "invalid email"
 
 
 @pytest.mark.asyncio
@@ -137,10 +133,8 @@ async def test_invalid_email(emails: list[str]):
 async def test_invalid_own_auth_token(emails: list[str]):
     FixtureFactory.createFromEmails(emails)
 
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(InvalidOwnAuthTokenError) as e:
         await LoginWithAuthToken().login(emails[0], OwnAuthToken("", ""))
-
-    assert e.value.args[0] == "invalid own auth token"
 
 
 @pytest.mark.asyncio
