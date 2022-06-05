@@ -8,7 +8,7 @@ from adaptor.repository.github_authtoken_simple_repository import GithubAuthToke
 from adaptor.repository.github_user_simple_repository import GithubUserSimpleRepository
 from adaptor.repository.github_userinfo_simple_repository import GithubUserInfoSimpleRepository
 from database import DB
-from usecase.github_login import GithubLoginWithoutToken
+from usecase.github_login import GithubLoginWithTemporaryCode
 
 from dependencies.dependency import Provider, TypeValue
 
@@ -30,7 +30,7 @@ class AuthContainer:
             "auth-token-repo": GithubAuthTokenSimpleRepository,
             "user-info-repo": GithubUserInfoSimpleRepository,
             "user-repo": GithubUserSimpleRepository,
-            "github-login-without-token": GithubLoginWithoutToken,
+            "github-login-with-temporary-code": GithubLoginWithTemporaryCode,
             "token-viewmodel": UpdatableTokenViewModel,
             "token-presenter": TokenPresenter,
             "token-controller": TokenController,

@@ -7,7 +7,7 @@ from entity.github_temporary_code import GithubTemporaryCode
 from entity.github_user import GithubUser
 from entity.github_user_info import GithubUserInfo
 
-from usecase.github_login_port import GithubLoginWithoutTokenInputPort, GithubLoginWithoutTokenOutputPort
+from usecase.github_login_port import GithubLoginWithTemporaryCodeInputPort, GithubLoginWithTemporaryCodeOutputPort
 
 
 class GithubIssueToken:
@@ -54,9 +54,9 @@ class GithubUpdateUserAuthToken:
         await self.repository.updateAuthToken(email=userInfo.email, authToken=authToken)
 
 
-class GithubLoginWithoutToken(GithubLoginWithoutTokenInputPort):
+class GithubLoginWithTemporaryCode(GithubLoginWithTemporaryCodeInputPort):
     def __init__(self):
-        self.outputPort: GithubLoginWithoutTokenOutputPort = provider["auth"]["token-presenter"]
+        self.outputPort: GithubLoginWithTemporaryCodeOutputPort = provider["auth"]["token-presenter"]
     
     async def login(self, code: GithubTemporaryCode):
         authToken = await GithubIssueToken().issue(code)

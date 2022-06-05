@@ -1,0 +1,2 @@
+class TemporaryCode(str):
+    pass

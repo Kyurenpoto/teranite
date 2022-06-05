@@ -4,13 +4,13 @@ from entity.auth_token import UserAuthToken
 from entity.github_temporary_code import GithubTemporaryCode
 
 
-class GithubLoginWithoutTokenInputPort(ABC):
+class GithubLoginWithTemporaryCodeInputPort(ABC):
     @abstractmethod
     async def login(self, code: GithubTemporaryCode):
         pass
 
 
-class GithubLoginWithoutTokenOutputPort(ABC):
+class GithubLoginWithTemporaryCodeOutputPort(ABC):
     @abstractmethod
     async def present(self, authToken: UserAuthToken):
         pass
