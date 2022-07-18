@@ -15,11 +15,11 @@ class UserAuthTokenRepository(ABC):
         pass
 
     @abstractmethod
-    async def updateSocialAuthTokenByEmail(self, email: str, socialAuthToken: SocialAuthToken, socialType: str) -> None:
+    async def saveSocialAuthTokenByEmail(self, email: str, socialAuthToken: SocialAuthToken, socialType: str) -> None:
         pass
 
     @abstractmethod
-    async def updateOwnAuthTokenByEmail(self, email: str, ownAuthToken: OwnAuthToken) -> None:
+    async def saveOwnAuthTokenByEmail(self, email: str, ownAuthToken: OwnAuthToken) -> None:
         pass
 
 
@@ -33,7 +33,7 @@ class FakeUserAuthTokenRepository(UserAuthTokenRepository):
 
         return self.users[email]
 
-    async def updateSocialAuthTokenByEmail(self, email: str, socialAuthToken: SocialAuthToken, socialType: str) -> None:
+    async def saveSocialAuthTokenByEmail(self, email: str, socialAuthToken: SocialAuthToken, socialType: str) -> None:
         if email not in self.users:
             self.users[email] = (
                 UserAuthTokenBuilder(email).fillSocialAuthTokenWithSocialType(socialAuthToken, socialType).build()
@@ -42,7 +42,7 @@ class FakeUserAuthTokenRepository(UserAuthTokenRepository):
             self.users[email].socialAuthtoken = socialAuthToken
             self.users[email].socialType = socialType
 
-    async def updateOwnAuthTokenByEmail(self, email: str, ownAuthToken: OwnAuthToken) -> None:
+    async def saveOwnAuthTokenByEmail(self, email: str, ownAuthToken: OwnAuthToken) -> None:
         if email not in self.users:
             self.users[email] = (
                 UserAuthTokenBuilder(email).fillOwnAuthTokenWithExpireDatetime(ownAuthToken, RawDatetime("")).build()

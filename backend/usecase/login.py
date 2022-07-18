@@ -61,10 +61,10 @@ class UpdateUserAuthToken:
         self.repository: UserAuthTokenRepository = provider["login"]["user-auth-token-repo"]
 
     async def updateSocialAuthToken(self, email: str, socialAuthToken: SocialAuthToken, socialType: str) -> None:
-        await self.repository.updateSocialAuthTokenByEmail(email, socialAuthToken, socialType)
+        await self.repository.saveSocialAuthTokenByEmail(email, socialAuthToken, socialType)
 
     async def updateOwnAuthToken(self, email: str, ownAuthToken: OwnAuthToken) -> None:
-        await self.repository.updateOwnAuthTokenByEmail(email, ownAuthToken)
+        await self.repository.saveOwnAuthTokenByEmail(email, ownAuthToken)
 
 
 class LoginWithTemporaryCode(LoginWithTemporaryCodeInputPort):
