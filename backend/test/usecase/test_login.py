@@ -139,7 +139,7 @@ async def test_invalid_own_auth_token(emails: list[str]):
 
 @pytest.mark.asyncio
 @given(strategies.lists(strategies.emails(), min_size=1, unique=True))
-async def test_not_update_own_auth_token(emails: list[str]):
+async def test_not_save_own_auth_token(emails: list[str]):
     fixture = FixtureFactory.createFromEmails(emails)
     fixture.users[emails[0]].expireDatetime = FakeRawDatetime("")
     fixture.userAuthTokenRepo.users[emails[0]].expireDatetime = FakeRawDatetime("")
@@ -158,7 +158,7 @@ async def test_not_update_own_auth_token(emails: list[str]):
 
 @pytest.mark.asyncio
 @given(strategies.lists(strategies.emails(), min_size=1, unique=True))
-async def test_update_own_auth_token(emails: list[str]):
+async def test_save_own_auth_token(emails: list[str]):
     fixture = FixtureFactory.createFromEmails(emails)
     fixture.users[emails[0]].expireDatetime = FakeRawDatetime("-")
     fixture.userAuthTokenRepo.users[emails[0]].expireDatetime = FakeRawDatetime("-")
