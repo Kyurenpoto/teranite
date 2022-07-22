@@ -32,17 +32,26 @@ class FakeUserAuthTokenDataSource:
 
     async def createOwnAuthTokenByEmail(self, email: str, ownAuthToken: OwnAuthToken, datetime: RawDatetime) -> None:
         self.users[email] = (
-            UserAuthTokenBuilder(email).fillOwnAuthTokenWithExpireDatetime(ownAuthToken, RawDatetime("")).build()
+            UserAuthTokenBuilder(email).fillOwnAuthTokenWithExpireDatetime(ownAuthToken, datetime).build()
         )
 
     async def updateOwnAuthTokenByEmail(self, email: str, ownAuthToken: OwnAuthToken, datetime: RawDatetime) -> None:
         self.users[email].ownAuthToken = ownAuthToken
-        self.users[email].expireDatetime = RawDatetime("")
+        self.users[email].expireDatetime = datetime
+
+
+class FakeRawDataTimeGenerator:
+    def __init__(self):
+        self.time = RawDatetime("")
+
+    async def now(self):
+        return self.time
 
 
 class Fixture(NamedTuple):
     users: dict[str, UserAuthToken]
     userAuthTokenSource: FakeUserAuthTokenDataSource
+    datatimeGen: FakeRawDataTimeGenerator
 
 
 class FixtureFactory:
@@ -60,11 +69,21 @@ class FixtureFactory:
 
     @classmethod
     def create(cls, emails: list[str] = []):
-        provider.wire({"login": LoginContainer({"user-auth-token-source": FakeUserAuthTokenDataSource})})
+        provider.wire(
+            {
+                "login": LoginContainer(
+                    {
+                        "user-auth-token-source": FakeUserAuthTokenDataSource,
+                        "raw-datatime-gen": FakeRawDataTimeGenerator,
+                    }
+                )
+            }
+        )
 
         fixture = Fixture(
             FixtureFactory.usersFromEmails(emails),
             provider["login"]["user-auth-token-source"],
+            provider["login"]["raw-datatime-gen"],
         )
 
         fixture.userAuthTokenSource.users = {k: v for k, v in fixture.users.items()}
@@ -95,7 +114,7 @@ async def test_read_user_auth_token_absent_email(emails: list[str]):
 @pytest.mark.asyncio
 @given(strategies.lists(strategies.emails(), min_size=1, unique=True))
 async def test_save_social_auth_token(emails: list[str]):
-    fixture = FixtureFactory.create(emails[1:])
+    fixture = FixtureFactory.create(emails)
 
     await SimpleUserAuthTokenRepository().saveSocialAuthTokenByEmail(
         emails[0], SocialAuthToken(f"access@{emails[0]}", f"refresh@{emails[0]}"), ""
@@ -125,9 +144,10 @@ async def test_save_social_auth_token_absent_email(emails: list[str]):
 
 
 @pytest.mark.asyncio
-@given(strategies.lists(strategies.emails(), min_size=1, unique=True))
-async def test_save_own_auth_token(emails: list[str]):
-    fixture = FixtureFactory.create(emails[1:])
+@given(strategies.lists(strategies.emails(), min_size=1, unique=True), strategies.text())
+async def test_save_own_auth_token(emails: list[str], time: str):
+    fixture = FixtureFactory.create(emails)
+    fixture.datatimeGen.time = RawDatetime(time)
 
     await SimpleUserAuthTokenRepository().saveOwnAuthTokenByEmail(
         emails[0], OwnAuthToken(f"access@{emails[0]}", f"refresh@{emails[0]}")
@@ -137,13 +157,15 @@ async def test_save_own_auth_token(emails: list[str]):
         len(fixture.users) == len(fixture.userAuthTokenSource.users)
         and emails[0] in fixture.users
         and emails[0] in fixture.userAuthTokenSource.users
+        and fixture.userAuthTokenSource.users[emails[0]].expireDatetime == fixture.datatimeGen.time
     )
 
 
 @pytest.mark.asyncio
-@given(strategies.lists(strategies.emails(), min_size=1, unique=True))
-async def test_save_own_auth_token_absent_email(emails: list[str]):
+@given(strategies.lists(strategies.emails(), min_size=1, unique=True), strategies.text())
+async def test_save_own_auth_token_absent_email(emails: list[str], time: str):
     fixture = FixtureFactory.create(emails[1:])
+    fixture.datatimeGen.time = RawDatetime(time)
 
     await SimpleUserAuthTokenRepository().saveOwnAuthTokenByEmail(
         emails[0], OwnAuthToken(f"access@{emails[0]}", f"refresh@{emails[0]}")
@@ -153,4 +175,5 @@ async def test_save_own_auth_token_absent_email(emails: list[str]):
         len(fixture.users) + 1 == len(fixture.userAuthTokenSource.users)
         and emails[0] not in fixture.users
         and emails[0] in fixture.userAuthTokenSource.users
+        and fixture.userAuthTokenSource.users[emails[0]].expireDatetime == fixture.datatimeGen.time
     )
