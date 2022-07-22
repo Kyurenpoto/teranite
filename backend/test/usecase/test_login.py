@@ -72,7 +72,7 @@ class FixtureFactory:
 async def test_invalid_temporary_code(codes: list[str]):
     FixtureFactory.create(codes=codes[1:])
 
-    with pytest.raises(InvalidTemporaryCodeError) as e:
+    with pytest.raises(InvalidTemporaryCodeError):
         await LoginWithTemporaryCode().login(TemporaryCode(codes[0]), "")
 
 
@@ -122,9 +122,9 @@ async def test_valid_temporary_code_with_generate_own_auth_token(codes: list[str
 @pytest.mark.asyncio
 @given(strategies.lists(strategies.emails(), min_size=1, unique=True))
 async def test_invalid_email(emails: list[str]):
-    fixture = FixtureFactory.createFromEmails(emails[1:])
+    FixtureFactory.createFromEmails(emails[1:])
 
-    with pytest.raises(InvalidEmailError) as e:
+    with pytest.raises(InvalidEmailError):
         await LoginWithAuthToken().login(emails[0], OwnAuthToken("", ""))
 
 
