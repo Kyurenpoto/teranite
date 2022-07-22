@@ -56,14 +56,14 @@ class GenerateOwnAuthToken:
         return ownAuthToken
 
 
-class UpdateUserAuthToken:
+class SaveUserAuthToken:
     def __init__(self):
         self.repository: UserAuthTokenRepository = provider["login"]["user-auth-token-repo"]
 
-    async def updateSocialAuthToken(self, email: str, socialAuthToken: SocialAuthToken, socialType: str) -> None:
+    async def saveSocialAuthToken(self, email: str, socialAuthToken: SocialAuthToken, socialType: str) -> None:
         await self.repository.saveSocialAuthTokenByEmail(email, socialAuthToken, socialType)
 
-    async def updateOwnAuthToken(self, email: str, ownAuthToken: OwnAuthToken) -> None:
+    async def saveOwnAuthToken(self, email: str, ownAuthToken: OwnAuthToken) -> None:
         await self.repository.saveOwnAuthTokenByEmail(email, ownAuthToken)
 
 
@@ -76,8 +76,8 @@ class LoginWithTemporaryCode(LoginWithTemporaryCodeInputPort):
         email = await AccessUserEmail().access(socialAuthToken, socialType)
         ownAuthToken = await GenerateOwnAuthToken().generateFromSocialAuthToken(email, socialAuthToken)
 
-        await UpdateUserAuthToken().updateSocialAuthToken(email, socialAuthToken, socialType)
-        await UpdateUserAuthToken().updateOwnAuthToken(email, ownAuthToken)
+        await SaveUserAuthToken().saveSocialAuthToken(email, socialAuthToken, socialType)
+        await SaveUserAuthToken().saveOwnAuthToken(email, ownAuthToken)
 
         await self.outputPort.present(ownAuthToken)
 
@@ -89,6 +89,6 @@ class LoginWithAuthToken(LoginWithAuthTokenInputPort):
     async def login(self, email: str, ownAuthToken: OwnAuthToken) -> None:
         newOwnAuthToken = await GenerateOwnAuthToken().generateFromOwnAuthToken(email, ownAuthToken)
 
-        await UpdateUserAuthToken().updateOwnAuthToken(email, newOwnAuthToken)
+        await SaveUserAuthToken().saveOwnAuthToken(email, newOwnAuthToken)
 
         await self.outputPort.present(newOwnAuthToken)
