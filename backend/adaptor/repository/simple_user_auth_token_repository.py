@@ -1,7 +1,6 @@
 from adaptor.repository.user_auth_token_repository import InvalidEmailError, UserAuthTokenRepository
 from dependencies.dependency import provider
 from entity.auth_token import OwnAuthToken, SocialAuthToken
-from entity.raw_datetime import RawDatetime
 from entity.user_auth_token import UserAuthToken
 
 
